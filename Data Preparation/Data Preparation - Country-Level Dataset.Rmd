@@ -1,0 +1,58 @@
+---
+title: "Data Preparation - Country Level Dataset"
+---
+
+Directories:
+```{r}
+data_dir = "/path/to/data/directory/"
+out_dir = "/path/to/output/directory/"
+```
+
+Import datasets:
+```{r}
+country_data = read.csv(paste0(data_dir, "authors-country_data.csv"))
+vdem_agg = read.csv(paste0(data_dir, "vdem-regime_characteristics.csv"))
+df = read.csv(paste0(data_dir, "wvs-merged.csv"))
+```
+
+```{r}
+df = merge(df, country_data, by = c("country"), all = TRUE)
+```
+
+left-right aggregates:
+```{r}
+library(stats)
+lrscale_list = list()
+
+for (i in c(1: length(unique(df$country)))) {
+ cntry = unique(df$country)[i]; data = subset(df, country == cntry) # subset country
+ correlation = cor.test(data$autdem, data$lrscale, method = "pearson") # calculate correlation
+ lrscale_list[[i]] = data.frame( # parse correlations into dataframe
+  country = cntry, lb = c(correlation[[9]])[1], 
+  ub = c(correlation[[9]])[2], corr = c(correlation[[4]]))
+}
+
+lrscale_list = do.call(rbind, lrscale_list) # row bind list elements
+lrscale_list$country = as.character(lrscale_list$country) 
+lrscale_list = merge(lrscale_list, country_data, by = c("country"), all = TRUE)
+lrscale_list$duration = lrscale_list$endyear - lrscale_list$startyear
+
+lrscale_list = data.frame(rbind( # add proximity variable
+ cbind(subset(lrscale_list, legacy != "Right-Wing"), 
+       prox = subset(lrscale_list, legacy != "Right-Wing")$corr), 
+ cbind(subset(lrscale_list, legacy == "Right-Wing"), 
+       prox = subset(lrscale_list, legacy == "Right-Wing")$corr*-1))
+ )
+
+lrscale_list$prox[lrscale_list$legacy == "Democratic"] = NA # missing proximity for dem legacy
+
+lrscale_list = lrscale_list[,c(1:4, 6:length(lrscale_list))]
+```
+
+Merge with vdem data
+```{r}
+country_data = merge(lrscale_list, vdem_agg, by = c("country"), all = TRUE)
+country_data = country_data[,c(1:9, 11:length(country_data))]
+write.csv(country_data, paste0(data_dir, "authors-country_data.csv"))
+```
+

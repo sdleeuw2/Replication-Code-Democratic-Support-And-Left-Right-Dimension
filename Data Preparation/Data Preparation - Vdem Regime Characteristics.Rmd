@@ -51,6 +51,8 @@ vdem_agg$repression_r = (rescale(vdem_agg$repr_mean)*-1)+1
 ```
 
 ```{r}
-write.csv(vdem_agg, paste0(out_dir, "vdem-regime_characteristics.cvs"))
+write.csv(vdem_agg, paste0(out_dir, "vdem-regime_characteristics.csv"))
 ```
+
+
 
