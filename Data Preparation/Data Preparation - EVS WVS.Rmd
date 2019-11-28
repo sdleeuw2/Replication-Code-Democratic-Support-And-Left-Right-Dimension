@@ -142,6 +142,44 @@ hist(df$autdem, main = "Distribution Democracy-Autocracy Index",
 
 ## Country-Level Variables
 
+```{r}
+vdem = read.csv("/Users/sjifradeleeuw/GitHub/Replication-Code-Democratic-Support-And-Left-Right-Dimension/Data/vdem-country_year.csv")
+```
+
+Rescale values so that higher values indicate more repression, indoctrination and lack of liberal democracy:
+```{r}
+rescale = function(x) {
+ x = x - min(x, na.rm = TRUE)
+ x = x / max(x, na.rm = TRUE)
+ return(x)
+}
+
+vdem$indoctrination_r = (rescale(vdem$indoctrination)*-1)+1 
+vdem$repression_r = (rescale(vdem$repression)*-1)+1
+vdem$electdem_r = (rescale(vdem$electdem)*-1)+1
+```
+
+
+```{r}
+vdem_autyears = list()
+
+vdem_sub = subset(vdem, legacy!="Democratic")
+
+for (i in c(1:length(unique(vdem_sub$country)))) {
+ country = subset(vdem_sub, country == unique(vdem_sub$country)[i])
+ autvec = c(country$startyear[1]: country$endyear[1])  
+ for (j in c(1:length(autvec))) {
+   value = autvec[j]
+   country$keep[country$year == value] = 1
+ }
+ vdem_autyears[[i]] = subset(country, keep == 1) # subset years of authoritarianism 
+}
+
+vdem_autyears = data.frame(do.call(rbind, vdem_autyears))
+```
+
+
+
 ## Independent Variables
 
 First hand experiences with authoritarianism 
