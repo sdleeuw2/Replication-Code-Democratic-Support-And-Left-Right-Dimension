@@ -2,4 +2,44 @@
 title: "C.2. Individual-Level Legacy Effects"
 ---
 
+Directories:
+```{r}
+source("source_file.R")
+```
 
+Import data:
+```{r}
+df = read.csv(paste0(data_dir, "wvs-merged.csv"))
+df$native = factor(df$native); df$relig = factor(df$relig); df$educ = factor(df$educ); df$gndr = factor(df$gndr); df$exposure_age = factor(df$exposure_age); df$age_cat = factor(df$age_cat)
+head(df)
+```
+
+```{r}
+datasets = list(subset(df, legacy == "Right-Wing" & exp == 1), 
+                subset(df, legacy == "Left-Wing" & exp == 1))
+demlearn_list = list()
+
+for (i in c(1:2)) {
+ library(lme4); library(lmerTest)
+ demlearn_list[[i]] = lmer(autdem ~ lrscale + year + year*lrscale + (1 | country), data = datasets[[i]])
+}
+```
+
+```{r}
+demlearn_list = data.frame(
+ legacy = c(rep("Left-Wing", 6), rep("Right-Wing", 6)),
+ param = c(rep(c("Intercept", "Left-Right", "Year: 1999", "Year: 2008", 
+           "Left-Right:1999", "Left-Right: 2008"),2)),
+ coeff = c(1.921, -0.078, 0.090, -0.989, 0.022, 0.057, 0.801, 0.038, -0.002, 0.001, 0.032, 0.008),
+ se = c(0.125, 0.0153, 0.0918, 0.094,0.016, 0.017, 0.068, 0.003, 0.031, 0.030, 0.005, 0.005))
+```
+
+```{r}
+ggplot2::ggplot(data = subset(demlearn_list, param!="Intercept"), aes(x = param, y = coeff)) + 
+ geom_point() + geom_hline(yintercept = 0, size = 0.2, color = "grey40") +
+ geom_errorbar(mapping = aes(ymin = coeff - se, ymax = coeff + se), size = 0.2, width = 0.2) + 
+ coord_flip() + theme_minimal() + theme(axis.title = element_blank()) +
+ facet_grid(.~legacy)
+
+ggsave(paste0(out_dir, "individuallegacy-democraticlearning.png"), width = 6, height = 3)
+```

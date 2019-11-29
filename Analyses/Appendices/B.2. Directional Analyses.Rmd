@@ -9,7 +9,7 @@ source("source_file.R")
 
 Import data:
 ```{r}
-#df = read.csv(paste0(data_dir, "wvs-merged.csv"))
+df = read.csv(paste0(data_dir, "wvs-merged.csv"))
 df$native = factor(df$native); df$relig = factor(df$relig); df$educ = factor(df$educ); df$gndr = factor(df$gndr); df$exposure_age = factor(df$exposure_age); df$age_cat = factor(df$age_cat)
 head(df)
 ```
@@ -61,29 +61,6 @@ Hypothesis 2
 ```{r}
 for (i in c(5:10)) {direc_analysis(subset(df, legacy == "Left-Wing"), i, "_lw_h2")}
 for (i in c(5:10)) {direc_analysis(subset(df, legacy == "Right-Wing"), i, "_rw_h2")}
-```
-
-
-Hypothesis 1
-```{r}
-for (i in c(1:length(unique(df$country)))) {
- cntry = unique(df$country)[i]
- directory = paste0(robust_dir, "h1_", cntry)
- data = subset(df, country == cntry)
- model = lm(autdem ~ lrscale, data = data)
- sink(directory); print(summary(model)); sink()  
-}
-```
-
-Hypothesis 2a
-```{r}
-for (i in c(1:length(unique(df$country)))) {
- cntry = unique(df$country)[i]
- directory = paste0(robust_dir, "h2a_", cntry)
- data = subset(df, country == cntry)
- model = lm(autdem ~ lrscale + exp_yes + lrscale*exp_yes, data = data)
- sink(directory); print(summary(model)); sink()  
-}
 ```
 
 
