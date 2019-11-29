@@ -209,7 +209,7 @@ df$wave[df$survey == "evs2008"] = 4
 ```
 
 ```{r}
-write.csv(df, "/Users/sjifradeleeuw/GitHub/Replication-Code-Democratic-Support-And-Left-Right-Dimension/Data/wvs-merged.csv")
+write.csv(df, paste0(data_dir,"wvs-merged.csv"))
 ```
 
 
