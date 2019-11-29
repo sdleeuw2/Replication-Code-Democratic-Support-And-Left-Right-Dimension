@@ -1,0 +1,16 @@
+[1] "country"
+variable
+       Albania        Armenia        Austria        Belarus        Belgium         Bosnia 
+          3533           3500           3032           4592           3421           3512 
+      Bulgaria        Croatia        Czechia        Denmark   East Germany        Estonia 
+          4573           3724           4876           2530           4088           3544 
+       Finland         France        Georgia         Greece        Hungary        Iceland 
+          4173           4117           5008           2642           4170           1776 
+       Ireland          Italy         Latvia      Lithuania     Luxembourg      Macedonia 
+          2025           4531           3719           3527           2821           3550 
+       Moldova    Netherlands         Norway         Poland       Portugal        Romania 
+          4589           3607           3242           4758           2553           6753 
+        Russia         Serbia       Slovakia       Slovenia          Spain         Sweden 
+          8077           9629           3935           5451           6320           4214 
+   Switzerland        Ukraine United Kingdom   West Germany 
+          3725           6513           4695           4113 

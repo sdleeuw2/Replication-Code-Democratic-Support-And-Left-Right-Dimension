@@ -1,0 +1,10 @@
+[1] "educ"
+variable
+               Uncompleted Primary                  Completed Primary 
+                              7702                              21578 
+  Uncompleted Secondary Vocational     Completed Secondary Vocational 
+                             19694                              28471 
+    Uncompleted Secondary Academic       Completed Secondary Academic 
+                             16185                              33834 
+University without Official Degree    University with Official Degree 
+                             15517                              21074 

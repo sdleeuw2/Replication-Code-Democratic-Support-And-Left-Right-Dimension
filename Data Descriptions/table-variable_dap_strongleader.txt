@@ -1,0 +1,4 @@
+[1] "dap_strongleader"
+variable
+    1     2     3     4 
+18040 35504 43632 50857 

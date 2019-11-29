@@ -1,0 +1,4 @@
+[1] "sex"
+variable
+  Male Female 
+ 77499  91610 

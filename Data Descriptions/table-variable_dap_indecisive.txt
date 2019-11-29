@@ -1,0 +1,4 @@
+[1] "dap_indecisive"
+variable
+    1     2     3     4 
+14928 49842 47328 12081 

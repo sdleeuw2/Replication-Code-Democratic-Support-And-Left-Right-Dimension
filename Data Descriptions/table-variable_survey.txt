@@ -1,0 +1,4 @@
+[1] "survey"
+variable
+evs1990 evs1999 evs2008 wvs1994 wvs1999 wvs2005 
+   2138   37917   60397   36703    7732   24271 
