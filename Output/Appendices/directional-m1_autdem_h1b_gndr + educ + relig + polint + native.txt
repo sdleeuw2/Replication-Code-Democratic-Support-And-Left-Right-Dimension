@@ -1,0 +1,35 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 59652.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.8633 -0.6073  0.0304  0.6760  3.2223 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.08966  0.2994  
+ Residual             0.80309  0.8962  
+Number of obs: 22711, groups:  country, 22
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             6.737e-01  7.870e-02  4.743e+01   8.561 3.49e-11 ***
+lrscale                                 2.361e-02  2.689e-03  2.269e+04   8.778  < 2e-16 ***
+gndr2                                   1.603e-02  1.232e-02  2.268e+04   1.301   0.1932    
+educCompleted Secondary Academic        2.654e-01  3.073e-02  2.269e+04   8.635  < 2e-16 ***
+educCompleted Secondary Vocational      8.304e-02  3.354e-02  2.269e+04   2.476   0.0133 *  
+educUncompleted Primary                -1.300e-02  6.026e-02  2.268e+04  -0.216   0.8292    
+educUncompleted Secondary Academic      2.432e-01  3.388e-02  2.270e+04   7.178 7.28e-13 ***
+educUncompleted Secondary Vocational    6.255e-02  3.263e-02  2.268e+04   1.917   0.0553 .  
+educUniversity with Official Degree     5.264e-01  3.442e-02  2.270e+04  15.295  < 2e-16 ***
+educUniversity without Official Degree  3.796e-01  3.338e-02  2.269e+04  11.374  < 2e-16 ***
+relig2                                 -2.654e-02  1.632e-02  2.269e+04  -1.627   0.1038    
+relig3                                  1.137e-02  1.877e-02  2.268e+04   0.606   0.5447    
+relig4                                 -2.156e-03  2.204e-02  2.260e+04  -0.098   0.9221    
+polint                                 -8.253e-02  7.084e-03  2.269e+04 -11.650  < 2e-16 ***
+native1                                 2.720e-02  2.625e-02  2.269e+04   1.036   0.3002    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

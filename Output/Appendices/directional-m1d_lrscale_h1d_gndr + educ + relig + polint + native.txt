@@ -1,0 +1,40 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 183926.4
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-3.09778 -0.56779 -0.08065  0.63666  3.03478 
+
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr 
+ country  (Intercept) 0.18912  0.4349        
+          autdem      0.04941  0.2223   -0.53
+ Residual             4.41381  2.1009        
+Number of obs: 42481, groups:  country, 40
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             6.054e+00  1.473e-01  6.062e+01  41.095  < 2e-16 ***
+autdem                                 -1.617e-01  6.806e-02  3.800e+01  -2.376  0.02262 *  
+legacyLeft-Wing                        -3.319e-01  1.626e-01  3.776e+01  -2.041  0.04825 *  
+legacyRight-Wing                       -1.766e-01  2.281e-01  3.883e+01  -0.774  0.44336    
+gndr2                                  -1.845e-01  2.103e-02  4.243e+04  -8.770  < 2e-16 ***
+educCompleted Secondary Academic       -1.900e-02  4.617e-02  4.232e+04  -0.412  0.68062    
+educCompleted Secondary Vocational     -6.349e-02  5.302e-02  4.220e+04  -1.198  0.23108    
+educUncompleted Primary                -1.277e-01  8.240e-02  4.243e+04  -1.549  0.12131    
+educUncompleted Secondary Academic     -3.037e-02  5.222e-02  4.141e+04  -0.582  0.56084    
+educUncompleted Secondary Vocational   -8.097e-02  4.823e-02  4.233e+04  -1.679  0.09318 .  
+educUniversity with Official Degree    -1.095e-04  5.331e-02  4.229e+04  -0.002  0.99836    
+educUniversity without Official Degree -4.808e-02  4.916e-02  4.238e+04  -0.978  0.32808    
+relig2                                 -3.176e-01  2.947e-02  4.243e+04 -10.778  < 2e-16 ***
+relig3                                 -6.548e-01  3.185e-02  4.189e+04 -20.560  < 2e-16 ***
+relig4                                 -9.160e-01  3.593e-02  4.119e+04 -25.496  < 2e-16 ***
+polint                                 -2.233e-02  1.222e-02  4.242e+04  -1.827  0.06771 .  
+native1                                 3.701e-01  4.011e-02  4.237e+04   9.228  < 2e-16 ***
+autdem:legacyLeft-Wing                  2.939e-01  8.434e-02  3.754e+01   3.484  0.00127 ** 
+autdem:legacyRight-Wing                -1.424e-01  1.176e-01  3.768e+01  -1.210  0.23364    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

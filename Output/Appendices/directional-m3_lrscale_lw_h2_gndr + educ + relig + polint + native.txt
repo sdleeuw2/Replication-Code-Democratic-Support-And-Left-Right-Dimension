@@ -1,0 +1,37 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 99771.8
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-2.69467 -0.52816 -0.09817  0.60152  2.70117 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.1638   0.4047  
+ Residual             4.8308   2.1979  
+Number of obs: 22575, groups:  country, 22
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             6.334e+00  1.472e-01  1.643e+02  43.045  < 2e-16 ***
+autdem                                  3.052e-02  2.510e-02  2.256e+04   1.216  0.22404    
+exposure                               -1.403e-02  1.067e-03  2.255e+04 -13.151  < 2e-16 ***
+gndr2                                  -9.330e-02  3.029e-02  2.256e+04  -3.080  0.00207 ** 
+educCompleted Secondary Academic       -1.396e-01  7.863e-02  2.255e+04  -1.775  0.07589 .  
+educCompleted Secondary Vocational     -1.290e-01  8.420e-02  2.253e+04  -1.532  0.12543    
+educUncompleted Primary                 5.340e-02  1.511e-01  2.255e+04   0.353  0.72379    
+educUncompleted Secondary Academic     -1.319e-01  8.553e-02  2.250e+04  -1.542  0.12312    
+educUncompleted Secondary Vocational   -1.971e-01  8.194e-02  2.256e+04  -2.405  0.01618 *  
+educUniversity with Official Degree    -1.203e-01  8.740e-02  2.248e+04  -1.376  0.16877    
+educUniversity without Official Degree -2.519e-01  8.470e-02  2.256e+04  -2.974  0.00294 ** 
+relig2                                 -3.066e-01  4.009e-02  2.251e+04  -7.648 2.12e-14 ***
+relig3                                 -6.658e-01  4.595e-02  2.190e+04 -14.489  < 2e-16 ***
+relig4                                 -8.178e-01  5.398e-02  2.077e+04 -15.150  < 2e-16 ***
+polint                                 -1.150e-01  1.763e-02  2.255e+04  -6.521 7.15e-11 ***
+native1                                 3.502e-01  6.468e-02  2.256e+04   5.415 6.20e-08 ***
+autdem:exposure                         4.214e-03  7.776e-04  2.255e+04   5.418 6.07e-08 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

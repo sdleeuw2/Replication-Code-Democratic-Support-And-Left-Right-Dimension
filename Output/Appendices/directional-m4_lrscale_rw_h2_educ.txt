@@ -1,0 +1,35 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 75105.7
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-2.91686 -0.62544 -0.03075  0.58535  2.96120 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.1474   0.3839  
+ Residual             3.8470   1.9614  
+Number of obs: 17928, groups:  country, 6
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             5.637e+00  1.659e-01  6.127e+00  33.971 3.28e-08 ***
+autdem                                 -3.703e-01  2.216e-02  1.791e+04 -16.714  < 2e-16 ***
+exposure_age2                           6.608e-01  1.988e-01  1.790e+04   3.323 0.000893 ***
+exposure_age3                           3.994e-01  7.827e-02  1.781e+04   5.102 3.39e-07 ***
+exposure_age4                           1.817e-01  8.073e-02  1.791e+04   2.251 0.024390 *  
+educCompleted Secondary Academic       -1.209e-01  4.836e-02  1.791e+04  -2.499 0.012457 *  
+educCompleted Secondary Vocational     -6.356e-02  6.077e-02  1.791e+04  -1.046 0.295661    
+educUncompleted Primary                -1.603e-01  6.304e-02  1.791e+04  -2.544 0.010982 *  
+educUncompleted Secondary Academic     -4.102e-02  5.506e-02  1.791e+04  -0.745 0.456269    
+educUncompleted Secondary Vocational   -9.966e-02  5.762e-02  1.791e+04  -1.730 0.083703 .  
+educUniversity with Official Degree    -2.034e-01  5.686e-02  1.791e+04  -3.578 0.000348 ***
+educUniversity without Official Degree -2.115e-01  6.308e-02  1.785e+04  -3.353 0.000802 ***
+autdem:exposure_age2                    1.575e-01  1.065e-01  1.791e+04   1.479 0.139142    
+autdem:exposure_age3                    1.958e-02  4.026e-02  1.791e+04   0.486 0.626797    
+autdem:exposure_age4                    6.509e-02  4.193e-02  1.791e+04   1.552 0.120587    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

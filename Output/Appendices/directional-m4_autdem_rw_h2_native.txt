@@ -1,0 +1,40 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 16485.1
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.5133 -0.6286  0.1056  0.7461  2.7247 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.1145   0.3384  
+ Residual             0.6938   0.8329  
+Number of obs: 6639, groups:  country, 6
+
+Fixed effects:
+                        Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)            1.859e+00  1.477e-01  6.426e+00  12.590 9.11e-06 ***
+lrscale               -6.976e-02  6.761e-03  6.626e+03 -10.319  < 2e-16 ***
+exposure_age2         -3.925e-01  1.287e-01  6.629e+03  -3.051  0.00229 ** 
+exposure_age3         -4.725e-02  7.494e-02  6.629e+03  -0.631  0.52836    
+exposure_age4         -1.444e-02  7.385e-02  6.628e+03  -0.196  0.84496    
+native1                2.739e-02  4.199e-02  6.627e+03   0.652  0.51426    
+lrscale:exposure_age2  8.696e-02  1.963e-02  6.625e+03   4.429 9.61e-06 ***
+lrscale:exposure_age3  6.566e-03  1.343e-02  6.625e+03   0.489  0.62489    
+lrscale:exposure_age4  1.830e-02  1.322e-02  6.625e+03   1.384  0.16643    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) lrscal exps_2 exps_3 exps_4 nativ1 lrs:_2 lrs:_3
+lrscale     -0.220                                                 
+exposure_g2 -0.064  0.261                                          
+exposure_g3 -0.110  0.436  0.145                                   
+exposure_g4 -0.121  0.444  0.154  0.279                            
+native1     -0.252 -0.027 -0.038 -0.057 -0.015                     
+lrscl:xps_2  0.077 -0.344 -0.913 -0.150 -0.153  0.006              
+lrscl:xps_3  0.113 -0.501 -0.128 -0.899 -0.228  0.004  0.172       
+lrscl:xps_4  0.117 -0.504 -0.133 -0.242 -0.919  0.000  0.174  0.256

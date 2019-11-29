@@ -1,0 +1,37 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 15938.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.5633 -0.6240  0.1013  0.7256  2.7923 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.08655  0.2942  
+ Residual             0.67578  0.8221  
+Number of obs: 6468, groups:  country, 6
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             1.846e+00  1.388e-01  8.749e+00  13.298 4.21e-07 ***
+lrscale                                -6.010e-02  5.977e-03  6.447e+03 -10.055  < 2e-16 ***
+exposure                               -2.099e-03  1.291e-03  6.451e+03  -1.627  0.10386    
+gndr2                                   8.729e-02  2.118e-02  6.447e+03   4.122 3.81e-05 ***
+educCompleted Secondary Academic        1.602e-01  3.753e-02  6.450e+03   4.268 2.00e-05 ***
+educCompleted Secondary Vocational      1.305e-01  6.072e-02  6.451e+03   2.148  0.03172 *  
+educUncompleted Primary                -1.662e-02  5.157e-02  6.449e+03  -0.322  0.74720    
+educUncompleted Secondary Academic      1.297e-01  4.523e-02  6.395e+03   2.868  0.00415 ** 
+educUncompleted Secondary Vocational    3.141e-02  3.999e-02  6.451e+03   0.786  0.43215    
+educUniversity with Official Degree     4.256e-01  5.535e-02  6.451e+03   7.688 1.71e-14 ***
+educUniversity without Official Degree  2.715e-01  4.376e-02  6.451e+03   6.205 5.79e-10 ***
+relig2                                 -2.567e-02  2.820e-02  6.448e+03  -0.910  0.36283    
+relig3                                  6.616e-02  3.219e-02  6.451e+03   2.055  0.03992 *  
+relig4                                  3.447e-02  3.703e-02  6.451e+03   0.931  0.35205    
+polint                                 -8.938e-02  1.182e-02  6.451e+03  -7.561 4.56e-14 ***
+native1                                 1.773e-02  4.178e-02  6.448e+03   0.424  0.67137    
+lrscale:exposure                        8.598e-04  2.050e-04  6.447e+03   4.195 2.77e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

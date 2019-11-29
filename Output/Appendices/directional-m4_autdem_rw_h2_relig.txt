@@ -1,0 +1,44 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 46175.8
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-5.3325 -0.6407  0.1112  0.7475  2.6872 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.1111   0.3333  
+ Residual             0.7646   0.8744  
+Number of obs: 17934, groups:  country, 6
+
+Fixed effects:
+                        Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)            1.998e+00  1.392e-01  5.433e+00  14.353 1.58e-05 ***
+lrscale               -7.597e-02  4.603e-03  1.792e+04 -16.503  < 2e-16 ***
+exposure_age2         -3.777e-01  1.002e-01  1.792e+04  -3.770 0.000164 ***
+exposure_age3         -9.386e-02  4.585e-02  1.792e+04  -2.047 0.040664 *  
+exposure_age4         -5.649e-02  4.653e-02  1.792e+04  -1.214 0.224762    
+relig2                 1.083e-02  1.823e-02  1.792e+04   0.594 0.552528    
+relig3                 2.284e-02  1.987e-02  1.792e+04   1.149 0.250374    
+relig4                 4.625e-02  2.272e-02  1.792e+04   2.035 0.041829 *  
+lrscale:exposure_age2  6.069e-02  1.583e-02  1.792e+04   3.834 0.000127 ***
+lrscale:exposure_age3  4.815e-03  8.161e-03  1.792e+04   0.590 0.555197    
+lrscale:exposure_age4  1.154e-02  8.399e-03  1.792e+04   1.375 0.169282    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) lrscal exps_2 exps_3 exps_4 relig2 relig3 relig4 lrs:_2 lrs:_3
+lrscale     -0.171                                                               
+exposure_g2 -0.050  0.227                                                        
+exposure_g3 -0.101  0.482  0.135                                                 
+exposure_g4 -0.096  0.474  0.137  0.318                                          
+relig2      -0.089  0.016  0.018  0.003  0.007                                   
+relig3      -0.098  0.065  0.029  0.024  0.009  0.589                            
+relig4      -0.098  0.104  0.037  0.050  0.020  0.525  0.556                     
+lrscl:xps_2  0.044 -0.286 -0.913 -0.139 -0.137  0.033  0.026  0.014              
+lrscl:xps_3  0.086 -0.549 -0.123 -0.899 -0.273  0.032  0.046  0.037  0.162       
+lrscl:xps_4  0.086 -0.529 -0.123 -0.282 -0.924  0.015  0.028  0.023  0.155  0.304

@@ -1,0 +1,55 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 183670.1
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.7151 -0.6050  0.0335  0.6879  3.1738 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.1144   0.3382  
+ Residual             0.9384   0.9687  
+Number of obs: 66128, groups:  country, 22
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             6.066e-01  7.552e-02  2.512e+01   8.033 2.10e-08 ***
+lrscale                                 2.179e-02  2.999e-03  6.610e+04   7.266 3.74e-13 ***
+exposure                               -3.455e-03  4.832e-04  6.610e+04  -7.150 8.78e-13 ***
+educCompleted Secondary Academic        2.974e-01  1.520e-02  6.611e+04  19.571  < 2e-16 ***
+educCompleted Secondary Vocational      1.684e-01  1.529e-02  6.611e+04  11.013  < 2e-16 ***
+educUncompleted Primary                -3.726e-02  2.583e-02  6.610e+04  -1.442    0.149    
+educUncompleted Secondary Academic      1.901e-01  1.784e-02  6.610e+04  10.661  < 2e-16 ***
+educUncompleted Secondary Vocational    2.731e-02  1.718e-02  6.610e+04   1.589    0.112    
+educUniversity with Official Degree     6.156e-01  1.610e-02  6.611e+04  38.239  < 2e-16 ***
+educUniversity without Official Degree  3.823e-01  1.854e-02  6.610e+04  20.618  < 2e-16 ***
+lrscale:exposure                        5.822e-04  8.192e-05  6.610e+04   7.107 1.20e-12 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+                 (Intr) lrscal exposr edcCSA edcCSV edcUnP edcUSA edcUSV edcUnvrstywthOfD
+lrscale          -0.222                                                                  
+exposure         -0.212  0.762                                                           
+edcCmpltdSA      -0.163  0.009  0.098                                                    
+edcCmpltdSV      -0.156  0.013  0.079  0.710                                             
+edcUncmpltP      -0.071  0.003 -0.024  0.371  0.370                                      
+edcUncmplSA      -0.133  0.005  0.078  0.600  0.593  0.315                               
+edcUncmplSV      -0.132  0.011  0.048  0.618  0.603  0.329  0.511                        
+edcUnvrstywthOfD -0.147 -0.002  0.066  0.689  0.667  0.350  0.567  0.575                 
+edcUnvrstywthtOD -0.129  0.002  0.069  0.588  0.573  0.307  0.489  0.498  0.547          
+lrscal:xpsr       0.178 -0.818 -0.905 -0.004 -0.008  0.000 -0.006 -0.001  0.004          
+                 edcUnvrstywthtOD
+lrscale                          
+exposure                         
+edcCmpltdSA                      
+edcCmpltdSV                      
+edcUncmpltP                      
+edcUncmplSA                      
+edcUncmplSV                      
+edcUnvrstywthOfD                 
+edcUnvrstywthtOD                 
+lrscal:xpsr       0.003          

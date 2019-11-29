@@ -1,0 +1,37 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 516398.1
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.1820 -0.5591 -0.0972  0.6294  3.1838 
+
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr 
+ country  (Intercept) 0.10489  0.3239        
+          autdem      0.04836  0.2199   -0.46
+ Residual             4.35652  2.0872        
+Number of obs: 119753, groups:  country, 40
+
+Fixed effects:
+                          Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)              5.662e+00  9.706e-02  3.911e+01  58.341  < 2e-16 ***
+autdem                  -1.454e-01  6.488e-02  3.772e+01  -2.242 0.030932 *  
+legacyLeft-Wing         -3.175e-01  1.195e-01  3.771e+01  -2.656 0.011521 *  
+legacyRight-Wing         6.296e-02  1.675e-01  3.864e+01   0.376 0.709094    
+gndr2                   -8.602e-02  1.210e-02  1.197e+05  -7.109 1.17e-12 ***
+autdem:legacyLeft-Wing   3.250e-01  8.049e-02  3.744e+01   4.037 0.000257 ***
+autdem:legacyRight-Wing -1.875e-01  1.124e-01  3.784e+01  -1.667 0.103777    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) autdem lgcL-W lgcR-W gndr2  at:L-W
+autdem      -0.482                                   
+lgcyLft-Wng -0.808  0.391                            
+lgcyRght-Wn -0.577  0.279  0.468                     
+gndr2       -0.069  0.006  0.003  0.002              
+atdm:lgcL-W  0.389 -0.806 -0.478 -0.225 -0.003       
+atdm:lgcR-W  0.278 -0.577 -0.226 -0.483 -0.004  0.465

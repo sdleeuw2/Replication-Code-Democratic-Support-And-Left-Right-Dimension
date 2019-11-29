@@ -1,0 +1,37 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 508134.2
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.1995 -0.5570 -0.0983  0.6284  3.1987 
+
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr 
+ country  (Intercept) 0.10668  0.3266        
+          autdem      0.04865  0.2206   -0.46
+ Residual             4.36371  2.0889        
+Number of obs: 117784, groups:  country, 40
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             5.649e+00  9.889e-02  4.065e+01  57.120  < 2e-16 ***
+autdem                                 -1.440e-01  6.512e-02  3.770e+01  -2.211  0.03317 *  
+legacyLeft-Wing                        -3.239e-01  1.206e-01  3.770e+01  -2.686  0.01070 *  
+legacyRight-Wing                        5.423e-02  1.689e-01  3.854e+01   0.321  0.74994    
+educCompleted Secondary Academic       -2.231e-02  2.274e-02  1.176e+05  -0.981  0.32640    
+educCompleted Secondary Vocational     -2.764e-02  2.343e-02  1.177e+05  -1.180  0.23812    
+educUncompleted Primary                -3.447e-02  3.736e-02  1.177e+05  -0.923  0.35618    
+educUncompleted Secondary Academic      1.040e-02  2.642e-02  1.177e+05   0.394  0.69392    
+educUncompleted Secondary Vocational   -7.432e-02  2.535e-02  1.177e+05  -2.932  0.00336 ** 
+educUniversity with Official Degree    -3.703e-02  2.467e-02  1.177e+05  -1.501  0.13333    
+educUniversity without Official Degree -4.640e-02  2.623e-02  1.178e+05  -1.769  0.07685 .  
+autdem:legacyLeft-Wing                  3.259e-01  8.077e-02  3.736e+01   4.035  0.00026 ***
+autdem:legacyRight-Wing                -1.878e-01  1.128e-01  3.771e+01  -1.665  0.10421    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+convergence code: 0
+Model failed to converge with max|grad| = 0.00305246 (tol = 0.002, component 1)
+

@@ -1,0 +1,27 @@
+
+Call:
+lm(formula = autdem ~ lrscale + exposure_age + exposure_age * 
+    lrscale, data = data)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-4.5408 -0.5966  0.0556  0.6696  2.0376 
+
+Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            2.072011   0.068270  30.350  < 2e-16 ***
+lrscale               -0.105940   0.014450  -7.331 2.66e-13 ***
+exposure_age2         -0.582722   0.331625  -1.757   0.0790 .  
+exposure_age3         -0.145557   0.085549  -1.701   0.0889 .  
+exposure_age4         -0.055440   0.096045  -0.577   0.5638    
+lrscale:exposure_age2  0.055058   0.054875   1.003   0.3157    
+lrscale:exposure_age3  0.009531   0.017392   0.548   0.5837    
+lrscale:exposure_age4  0.021851   0.019947   1.095   0.2734    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.9166 on 4804 degrees of freedom
+  (1401 observations deleted due to missingness)
+Multiple R-squared:  0.04755,	Adjusted R-squared:  0.04616 
+F-statistic: 34.26 on 7 and 4804 DF,  p-value: < 2.2e-16
+

@@ -1,0 +1,44 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 74478.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.0271 -0.6241 -0.0612  0.5903  3.2740 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.113    0.3362  
+ Residual             3.712    1.9266  
+Number of obs: 17934, groups:  country, 6
+
+Fixed effects:
+                       Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)           6.107e+00  1.469e-01  6.344e+00  41.578 5.68e-09 ***
+autdem               -3.703e-01  2.154e-02  1.792e+04 -17.195  < 2e-16 ***
+exposure_age2         2.967e-01  1.932e-01  1.792e+04   1.536   0.1246    
+exposure_age3         1.380e-01  7.438e-02  1.772e+04   1.855   0.0636 .  
+exposure_age4         3.913e-02  7.909e-02  1.792e+04   0.495   0.6208    
+relig2               -2.897e-01  4.007e-02  1.792e+04  -7.229 5.05e-13 ***
+relig3               -7.799e-01  4.334e-02  1.791e+04 -17.997  < 2e-16 ***
+relig4               -1.173e+00  4.926e-02  1.789e+04 -23.808  < 2e-16 ***
+autdem:exposure_age2  2.333e-01  1.040e-01  1.792e+04   2.244   0.0249 *  
+autdem:exposure_age3  4.634e-02  3.931e-02  1.792e+04   1.179   0.2384    
+autdem:exposure_age4  8.710e-02  4.122e-02  1.792e+04   2.113   0.0346 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) autdem exps_2 exps_3 exps_4 relig2 relig3 relig4 atd:_2 atd:_3
+autdem      -0.248                                                               
+exposure_g2 -0.085  0.188                                                        
+exposure_g3 -0.194  0.457  0.138                                                 
+exposure_g4 -0.169  0.448  0.127  0.360                                          
+relig2      -0.179  0.001  0.065  0.059  0.029                                   
+relig3      -0.179 -0.006  0.075  0.111  0.059  0.587                            
+relig4      -0.163 -0.016  0.073  0.139  0.065  0.524  0.545                     
+atdm:xpsr_2  0.054 -0.206 -0.886 -0.102 -0.095 -0.010 -0.013 -0.014              
+atdm:xpsr_3  0.144 -0.529 -0.099 -0.805 -0.263 -0.018 -0.021 -0.026  0.110       
+atdm:xpsr_4  0.133 -0.506 -0.094 -0.270 -0.869 -0.002 -0.013 -0.009  0.106  0.286

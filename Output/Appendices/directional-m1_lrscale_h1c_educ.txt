@@ -1,0 +1,40 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 139682.9
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-2.65576 -0.64741 -0.09107  0.72005  2.75976 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.07281  0.2698  
+ Residual             3.92556  1.9813  
+Number of obs: 33196, groups:  country, 12
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             5.540e+00  8.539e-02  1.522e+01  64.886  < 2e-16 ***
+autdem                                 -1.735e-01  1.217e-02  3.309e+04 -14.254  < 2e-16 ***
+educCompleted Secondary Academic        1.564e-01  4.345e-02  3.318e+04   3.601 0.000318 ***
+educCompleted Secondary Vocational      1.466e-01  4.233e-02  3.318e+04   3.462 0.000536 ***
+educUncompleted Primary                 1.619e-01  7.582e-02  3.314e+04   2.135 0.032762 *  
+educUncompleted Secondary Academic      5.672e-02  4.679e-02  3.319e+04   1.212 0.225453    
+educUncompleted Secondary Vocational    1.050e-01  4.236e-02  3.319e+04   2.478 0.013201 *  
+educUniversity with Official Degree     1.798e-01  4.422e-02  3.319e+04   4.066 4.78e-05 ***
+educUniversity without Official Degree  1.429e-01  4.163e-02  3.319e+04   3.432 0.000600 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+                 (Intr) autdem edcCSA edcCSV edcUnP edcUSA edcUSV edcUnvrstywthOfD
+autdem           -0.179                                                           
+edcCmpltdSA      -0.244 -0.111                                                    
+edcCmpltdSV      -0.258 -0.076  0.538                                             
+edcUncmpltP      -0.155  0.006  0.293  0.295                                      
+edcUncmplSA      -0.236 -0.051  0.487  0.498  0.290                               
+edcUncmplSV      -0.271 -0.008  0.525  0.549  0.311  0.492                        
+edcUnvrstywthOfD -0.216 -0.232  0.537  0.545  0.289  0.487  0.520                 
+edcUnvrstywthtOD -0.245 -0.174  0.559  0.568  0.307  0.509  0.564  0.570          

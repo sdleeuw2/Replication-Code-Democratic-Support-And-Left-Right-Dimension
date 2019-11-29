@@ -1,0 +1,55 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 72160.1
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-2.90527 -0.62360 -0.02979  0.57991  3.07981 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.1218   0.349   
+ Residual             3.8307   1.957   
+Number of obs: 17241, groups:  country, 6
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             5.717e+00  1.503e-01  6.042e+00  38.033 2.00e-08 ***
+autdem                                 -3.437e-01  1.923e-02  1.722e+04 -17.870  < 2e-16 ***
+exposure                                7.585e-03  1.811e-03  1.710e+04   4.187 2.84e-05 ***
+educCompleted Secondary Academic       -2.032e-01  4.774e-02  1.720e+04  -4.256 2.09e-05 ***
+educCompleted Secondary Vocational     -1.269e-01  6.073e-02  1.723e+04  -2.090   0.0367 *  
+educUncompleted Primary                -1.514e-01  6.839e-02  1.723e+04  -2.214   0.0269 *  
+educUncompleted Secondary Academic     -1.028e-01  5.541e-02  1.723e+04  -1.856   0.0635 .  
+educUncompleted Secondary Vocational   -1.444e-01  5.779e-02  1.723e+04  -2.500   0.0124 *  
+educUniversity with Official Degree    -2.851e-01  5.704e-02  1.723e+04  -4.998 5.86e-07 ***
+educUniversity without Official Degree -3.045e-01  6.299e-02  1.710e+04  -4.834 1.35e-06 ***
+autdem:exposure                         6.950e-04  9.416e-04  1.723e+04   0.738   0.4605    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+                 (Intr) autdem exposr edcCSA edcCSV edcUnP edcUSA edcUSV edcUnvrstywthOfD
+autdem           -0.199                                                                  
+exposure         -0.153  0.377                                                           
+edcCmpltdSA      -0.165 -0.051  0.127                                                    
+edcCmpltdSV      -0.125 -0.031  0.086  0.393                                             
+edcUncmpltP      -0.078 -0.009 -0.113  0.279  0.219                                      
+edcUncmplSA      -0.141  0.004  0.088  0.408  0.342  0.236                               
+edcUncmplSV      -0.141  0.023  0.089  0.424  0.305  0.239  0.319                        
+edcUnvrstywthOfD -0.114 -0.129  0.069  0.433  0.332  0.237  0.352  0.329                 
+edcUnvrstywthtOD -0.126 -0.071  0.120  0.421  0.303  0.207  0.311  0.313  0.336          
+autdem:xpsr       0.105 -0.458 -0.836 -0.011 -0.003  0.048 -0.015 -0.038  0.022          
+                 edcUnvrstywthtOD
+autdem                           
+exposure                         
+edcCmpltdSA                      
+edcCmpltdSV                      
+edcUncmpltP                      
+edcUncmplSA                      
+edcUncmplSV                      
+edcUnvrstywthOfD                 
+edcUnvrstywthtOD                 
+autdem:xpsr      -0.002          

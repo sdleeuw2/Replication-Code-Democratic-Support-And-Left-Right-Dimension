@@ -1,0 +1,23 @@
+
+Call:
+lm(formula = autdem ~ lrscale + exposure + lrscale * exposure, 
+    data = data)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-4.3018 -0.6369 -0.0224  0.6963  2.1907 
+
+Coefficients:
+                   Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       1.411e+00  9.379e-02  15.044  < 2e-16 ***
+lrscale          -9.025e-03  1.451e-02  -0.622  0.53396    
+exposure         -7.837e-03  2.985e-03  -2.626  0.00869 ** 
+lrscale:exposure -3.086e-06  4.560e-04  -0.007  0.99460    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.9903 on 3229 degrees of freedom
+  (1689 observations deleted due to missingness)
+Multiple R-squared:  0.01703,	Adjusted R-squared:  0.01612 
+F-statistic: 18.65 on 3 and 3229 DF,  p-value: 5.426e-12
+

@@ -1,0 +1,44 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 324041.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-5.1409 -0.6225  0.0680  0.7092  3.0998 
+
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr 
+ country  (Intercept) 0.200713 0.44801       
+          lrscale     0.001957 0.04424  -0.79
+ Residual             0.905384 0.95152       
+Number of obs: 118184, groups:  country, 40
+
+Fixed effects:
+                           Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)               1.690e+00  1.305e-01  3.835e+01  12.949 1.40e-15 ***
+lrscale                  -2.585e-02  1.308e-02  3.820e+01  -1.976 0.055374 .  
+legacyLeft-Wing          -9.353e-01  1.619e-01  3.804e+01  -5.776 1.15e-06 ***
+legacyRight-Wing          2.083e-01  2.256e-01  3.801e+01   0.924 0.361498    
+relig2                   -9.237e-03  8.022e-03  1.182e+05  -1.151 0.249550    
+relig3                    4.147e-02  8.444e-03  1.181e+05   4.911 9.05e-07 ***
+relig4                    7.737e-02  9.400e-03  1.181e+05   8.230  < 2e-16 ***
+lrscale:legacyLeft-Wing   6.127e-02  1.622e-02  3.786e+01   3.777 0.000546 ***
+lrscale:legacyRight-Wing -3.461e-02  2.262e-02  3.797e+01  -1.530 0.134210    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) lrscal lgcL-W lgcR-W relig2 relig3 relig4 lr:L-W
+lrscale     -0.788                                                 
+lgcyLft-Wng -0.804  0.634                                          
+lgcyRght-Wn -0.577  0.455  0.465                                   
+relig2      -0.041  0.004  0.001  0.000                            
+relig3      -0.047  0.009  0.005  0.001  0.597                     
+relig4      -0.046  0.014  0.006  0.002  0.540  0.582              
+lrscl:lgL-W  0.635 -0.806 -0.788 -0.367  0.000 -0.001 -0.003       
+lrscl:lgR-W  0.455 -0.578 -0.367 -0.788  0.001  0.004  0.003  0.466
+convergence code: 0
+Model failed to converge with max|grad| = 0.0443416 (tol = 0.002, component 1)
+

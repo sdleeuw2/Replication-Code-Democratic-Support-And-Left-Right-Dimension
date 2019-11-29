@@ -1,0 +1,41 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 59665.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.8552 -0.6076  0.0300  0.6766  3.2360 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.09016  0.3003  
+ Residual             0.80241  0.8958  
+Number of obs: 22711, groups:  country, 22
+
+Fixed effects:
+                                         Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)                             7.424e-01  9.474e-02  9.844e+01   7.836 5.53e-12 ***
+lrscale                                 2.321e-02  8.587e-03  2.267e+04   2.703  0.00688 ** 
+exposure_age2                          -2.707e-01  1.180e-01  2.267e+04  -2.294  0.02181 *  
+exposure_age3                          -8.166e-02  5.612e-02  2.267e+04  -1.455  0.14562    
+exposure_age4                           6.287e-02  6.317e-02  2.267e+04   0.995  0.31960    
+gndr2                                   1.682e-02  1.232e-02  2.268e+04   1.366  0.17203    
+educCompleted Secondary Academic        2.514e-01  3.123e-02  2.268e+04   8.049 8.75e-16 ***
+educCompleted Secondary Vocational      7.501e-02  3.380e-02  2.269e+04   2.219  0.02647 *  
+educUncompleted Primary                -1.361e-02  6.025e-02  2.267e+04  -0.226  0.82132    
+educUncompleted Secondary Academic      2.331e-01  3.420e-02  2.269e+04   6.816 9.57e-12 ***
+educUncompleted Secondary Vocational    5.402e-02  3.284e-02  2.268e+04   1.645  0.09997 .  
+educUniversity with Official Degree     5.197e-01  3.482e-02  2.269e+04  14.924  < 2e-16 ***
+educUniversity without Official Degree  3.704e-01  3.379e-02  2.268e+04  10.959  < 2e-16 ***
+relig2                                 -2.619e-02  1.632e-02  2.269e+04  -1.605  0.10859    
+relig3                                  1.041e-02  1.880e-02  2.267e+04   0.554  0.57977    
+relig4                                 -3.158e-03  2.208e-02  2.259e+04  -0.143  0.88629    
+polint                                 -8.483e-02  7.146e-03  2.269e+04 -11.871  < 2e-16 ***
+native1                                 2.271e-02  2.631e-02  2.268e+04   0.863  0.38819    
+lrscale:exposure_age2                   2.963e-02  2.070e-02  2.267e+04   1.431  0.15230    
+lrscale:exposure_age3                   5.248e-03  9.151e-03  2.267e+04   0.574  0.56629    
+lrscale:exposure_age4                  -1.923e-02  1.032e-02  2.267e+04  -1.864  0.06239 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

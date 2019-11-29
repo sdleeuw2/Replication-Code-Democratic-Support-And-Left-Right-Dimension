@@ -1,0 +1,32 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula
+   Data: data
+
+REML criterion at convergence: 190157.1
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.4003 -0.6166  0.0393  0.6950  2.8853 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.1041   0.3226  
+ Residual             0.9745   0.9872  
+Number of obs: 67559, groups:  country, 22
+
+Fixed effects:
+                   Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)       9.280e-01  7.125e-02  2.405e+01  13.024 2.18e-12 ***
+lrscale           2.265e-02  3.030e-03  6.754e+04   7.475 7.80e-14 ***
+exposure         -4.729e-03  4.832e-04  6.754e+04  -9.787  < 2e-16 ***
+gndr2            -4.400e-02  7.621e-03  6.754e+04  -5.773 7.80e-09 ***
+lrscale:exposure  5.405e-04  8.259e-05  6.753e+04   6.545 6.00e-11 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) lrscal exposr gndr2 
+lrscale     -0.237                     
+exposure    -0.211  0.767              
+gndr2       -0.061  0.026  0.023       
+lrscal:xpsr  0.191 -0.818 -0.912 -0.022

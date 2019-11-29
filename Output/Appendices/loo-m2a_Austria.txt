@@ -1,12 +1,17 @@
 Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
-Formula: formula_chr
-   Data: data
+Formula: for
+    0     1 
+ 4798 55249 
 
-REML criterion at convergence: 39606
+    1     2     3     4 
+37123 50321 44720 31050 
 
-Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--5.7911 -0.6249  0.1118  0.7620  2.6935 
+    0     1 
+ 4798 55249 
+
+    1     2     3     4 
+37123 50321 44720 31050 
+.6935 
 
 Random effects:
  Groups   Name        Variance Std.Dev.
