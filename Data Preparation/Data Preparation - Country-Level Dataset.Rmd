@@ -4,8 +4,7 @@ title: "Data Preparation - Country Level Dataset"
 
 Directories:
 ```{r}
-data_dir = "/path/to/data/directory/"
-out_dir = "/path/to/output/directory/"
+source("source_file.R")
 ```
 
 Import datasets:

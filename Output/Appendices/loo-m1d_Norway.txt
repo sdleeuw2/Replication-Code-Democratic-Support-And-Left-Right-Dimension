@@ -1,0 +1,38 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula_chr
+   Data: data
+
+REML criterion at convergence: 320199.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.8316 -0.6261  0.0640  0.7101  3.0631 
+
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr 
+ country  (Intercept) 0.210528 0.45883       
+          lrscale     0.002082 0.04563  -0.79
+ Residual             0.908762 0.95329       
+Number of obs: 116632, groups:  country, 39
+
+Fixed effects:
+                         Estimate Std. Error       df t value Pr(>|t|)    
+(Intercept)               1.70553    0.13937 36.20667  12.237 1.99e-14 ***
+lrscale                  -0.02825    0.01407 36.53179  -2.008 0.052060 .  
+legacyLeft-Wing          -0.92081    0.17059 36.11538  -5.398 4.39e-06 ***
+legacyRight-Wing          0.22818    0.23441 36.09340   0.973 0.336826    
+lrscale:legacyLeft-Wing   0.06232    0.01719 36.24147   3.625 0.000882 ***
+lrscale:legacyRight-Wing -0.03531    0.02365 36.33830  -1.493 0.144004    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) lrscal lgcL-W lgcR-W lr:L-W
+lrscale     -0.796                            
+lgcyLft-Wng -0.817  0.650                     
+lgcyRght-Wn -0.595  0.473  0.486              
+lrscl:lgL-W  0.651 -0.818 -0.795 -0.387       
+lrscl:lgR-W  0.473 -0.595 -0.387 -0.795  0.487
+convergence code: 0
+Model failed to converge with max|grad| = 0.00469049 (tol = 0.002, component 1)
+

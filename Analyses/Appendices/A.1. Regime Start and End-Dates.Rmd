@@ -5,8 +5,7 @@ description: Code for Annex A.1.2. Validation Start and End-Dates
 
 Directories:
 ```{r}
-data_dir = "path/to/data/directory"
-out_dir = "path/to/out/directory"
+source("source_file.R")
 ```
 
 Read data and create id within countries:

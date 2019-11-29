@@ -1,0 +1,34 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula_chr
+   Data: data
+
+REML criterion at convergence: 41065.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-5.6413 -0.6332  0.1223  0.7705  2.5446 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.1312   0.3622  
+ Residual             0.7723   0.8788  
+Number of obs: 15871, groups:  country, 5
+
+Fixed effects:
+                        Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)            1.912e+00  1.734e-01  5.225e+00  11.023 8.15e-05 ***
+lrscale               -6.318e-02  1.130e-02  1.585e+04  -5.591 2.29e-08 ***
+exposure_age           2.578e-02  1.850e-02  1.586e+04   1.394   0.1635    
+age                   -2.160e-03  1.285e-03  1.585e+04  -1.680   0.0930 .  
+surveyevs2008          4.813e-02  4.738e-02  1.585e+04   1.016   0.3098    
+surveywvs1994         -4.634e-02  6.945e-02  1.585e+04  -0.667   0.5046    
+surveywvs1999          5.835e-02  8.739e-02  1.585e+04   0.668   0.5044    
+surveywvs2005          6.895e-01  5.834e-02  1.585e+04  11.819  < 2e-16 ***
+lrscale:exposure_age  -5.301e-03  3.354e-03  1.585e+04  -1.580   0.1141    
+lrscale:age            3.281e-04  2.336e-04  1.585e+04   1.404   0.1602    
+lrscale:surveyevs2008 -1.827e-02  8.554e-03  1.585e+04  -2.136   0.0327 *  
+lrscale:surveywvs1994 -1.903e-02  1.285e-02  1.585e+04  -1.481   0.1386    
+lrscale:surveywvs1999  2.146e-03  1.691e-02  1.585e+04   0.127   0.8990    
+lrscale:surveywvs2005 -6.006e-02  1.071e-02  1.585e+04  -5.606 2.11e-08 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

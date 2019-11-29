@@ -2,6 +2,12 @@
 title: "Data Preparation - VDem Regime Characteristics"
 ---
 
+Directories:
+```{r}
+source("source_file.R")
+```
+
+
 ```{r}
 vdem = read.csv(paste0(data_dir, "vdem-country_year.csv"))
 ```

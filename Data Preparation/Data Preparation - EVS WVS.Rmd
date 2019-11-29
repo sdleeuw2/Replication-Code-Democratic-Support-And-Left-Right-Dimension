@@ -4,11 +4,9 @@ title: "Data Preparation - European and World Values Survey"
 
 ## Preparation
 
-directories
+Directories:
 ```{r}
-data_dir = "/path/to/data/directory/"
-out_dir = "/path/to/output/directory/"
-df = haven::read_dta(paste0(data_dir, "wvs-pooled.dta"))
+source("source_file.R")
 ```
 
 import stata pooled EVS-WVS dataset and subset relevant variables: 

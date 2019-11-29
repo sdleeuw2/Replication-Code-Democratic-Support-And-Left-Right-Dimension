@@ -1,0 +1,46 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula_chr
+   Data: data
+
+REML criterion at convergence: 33177.1
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-5.7808 -0.6203  0.1403  0.7579  2.5339 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ country  (Intercept) 0.1148   0.3388  
+ Residual             0.7107   0.8431  
+Number of obs: 13246, groups:  country, 5
+
+Fixed effects:
+                        Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)            1.955e+00  1.656e-01  5.665e+00  11.805 3.34e-05 ***
+lrscale               -7.648e-02  1.186e-02  1.323e+04  -6.448 1.17e-10 ***
+exp                   -1.907e-01  5.921e-02  1.323e+04  -3.220 0.001283 ** 
+age                    1.686e-03  1.603e-03  1.323e+04   1.052 0.292951    
+surveyevs2008         -1.577e-01  4.599e-02  1.323e+04  -3.430 0.000605 ***
+surveywvs1994         -1.060e-01  9.196e-02  1.323e+04  -1.153 0.248872    
+surveywvs2005          6.348e-01  6.848e-02  1.323e+04   9.271  < 2e-16 ***
+lrscale:exp            1.786e-02  1.020e-02  1.323e+04   1.751 0.080001 .  
+lrscale:age            1.393e-04  2.802e-04  1.323e+04   0.497 0.619094    
+lrscale:surveyevs2008  1.236e-02  8.143e-03  1.323e+04   1.518 0.128993    
+lrscale:surveywvs1994  4.590e-03  1.673e-02  1.323e+04   0.274 0.783841    
+lrscale:surveywvs2005 -3.787e-02  1.230e-02  1.323e+04  -3.079 0.002082 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) lrscal exp    age    sr2008 sr1994 sr2005 lrscl:x lrscl:g l:2008 l:1994
+lrscale     -0.375                                                                        
+exp          0.134 -0.296                                                                 
+age         -0.332  0.755 -0.666                                                          
+survyvs2008 -0.088  0.199  0.167 -0.181                                                   
+srvywvs1994 -0.075  0.157  0.083 -0.022  0.267                                            
+srvywvs2005 -0.062  0.138  0.218 -0.155  0.379  0.214                                     
+lrscale:exp -0.121  0.335 -0.900  0.605 -0.155 -0.086 -0.219                              
+lrscale:age  0.308 -0.823  0.594 -0.915  0.171  0.037  0.153 -0.671                       
+lrscl:s2008  0.083 -0.204 -0.140  0.161 -0.930 -0.251 -0.356  0.166  -0.189               
+lrscl:s1994  0.063 -0.159 -0.082  0.030 -0.241 -0.928 -0.174  0.085  -0.038   0.256       
+lrscl:s2005  0.056 -0.141 -0.210  0.147 -0.349 -0.179 -0.922  0.232  -0.163   0.371  0.181

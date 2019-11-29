@@ -4,8 +4,9 @@ title: "Data Preparation - Varieties of Democracy Data"
 
 Disclaimer: the index for indoctrination was borrowed from Dinas & Northmore-Ball (2019). The validation of this measure can be found in the supplementary material of their study: https://journals.sagepub.com/doi/abs/10.1177/0010414019852699?journalCode=cpsas
 
+Directories:
 ```{r}
-data_dir = "/path/to/directory"  # edit 
+source("source_file.R")
 ```
 
 Import data and change directory

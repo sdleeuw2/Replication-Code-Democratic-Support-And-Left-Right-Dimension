@@ -1,0 +1,39 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: formula_chr
+   Data: data
+
+REML criterion at convergence: 321244.1
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-5.1139 -0.6270  0.0697  0.7143  3.0640 
+
+Random effects:
+ Groups   Name        Variance Std.Dev. Corr 
+ country  (Intercept) 1.33731  1.1564        
+          lrscale     0.01018  0.1009   -0.96
+ Residual             0.91198  0.9550        
+Number of obs: 116839, groups:  country, 39
+
+Fixed effects:
+                           Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)               1.729e+00  3.342e-01  9.909e+04   5.172 2.32e-07 ***
+lrscale                  -2.758e-02  2.927e-02  4.100e+01  -0.942   0.3516    
+legacyLeft-Wing          -9.543e-01  4.189e-01  9.907e+04  -2.278   0.0227 *  
+legacyRight-Wing          2.041e-01  5.788e-01  9.907e+04   0.353   0.7244    
+lrscale:legacyLeft-Wing   6.042e-02  3.667e-02  4.092e+01   1.648   0.1071    
+lrscale:legacyRight-Wing -3.581e-02  5.068e-02  4.095e+01  -0.707   0.4838    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) lrscal lgcL-W lgcR-W lr:L-W
+lrscale     -0.962                            
+lgcyLft-Wng -0.798  0.767                     
+lgcyRght-Wn -0.577  0.555  0.461              
+lrscl:lgL-W  0.767 -0.798 -0.962 -0.443       
+lrscl:lgR-W  0.555 -0.578 -0.443 -0.962  0.461
+convergence code: 0
+unable to evaluate scaled gradient
+Model failed to converge: degenerate  Hessian with 1 negative eigenvalues
+
