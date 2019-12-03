@@ -16,23 +16,25 @@ df = haven::read_dta(paste0(data_dir, "wvs-pooled.dta"))
 df = subset(df, select = c(
  "S003", "S003A", "survey",
  "E114", "E116", "E117", "E120", "E121", "E122", "E123", 
- "E033", "X002", "S020", "X001", "X025", "A006", "X002_02", "E023",
+ "E033", "X002", "S020", "X003", "X001", "X025", "A006", "X002_02", "E023",
  "G033", "G034", "G035", "G036", "G037",
  "E043", "E044", "E037",
  "E035",
  "Y023B", "Y023C", "Y023A",
- "Y022A", "Y022B", "Y022C"
+ "Y022A", "Y022B", "Y022C",
+ "S017", "S017A", "S018", "S018A"
  ))
 
 colnames(df) = c(
  "country", "country_split", "survey",
- "dap_strongleader", "dap_army", "dap_dem", "dap_economy", "dap_indecisive", "dap_order", "dap_better", 
- "lrscale", "birth", "year", "gndr", "educ", "relig", "native", "polint",
+ "dap_strongleader", "dap_army", "dap_dem", "dap_economy", "dap_indecisive", "dap_order", "dap_better",
+ "lrscale", "birth", "year", "age", "gndr", "educ", "relig", "native", "polint",
  "nat1", "nat2", "nat3", "nat4", "nat5",
  "socpol1", "socpol2", "socpol3",
  "inceq",
  "lib1", "lib2", "lib3",
- "equality1", "equality2", "equality3"
+ "equality1", "equality2", "equality3",
+ "weight", "weight_split", "weight2", "weight2_split"
  )
 ```
 
@@ -209,8 +211,6 @@ df$wave[df$survey == "evs2008"] = 4
 ```{r}
 write.csv(df, paste0(data_dir,"wvs-merged.csv"))
 ```
-
-
 
 
 

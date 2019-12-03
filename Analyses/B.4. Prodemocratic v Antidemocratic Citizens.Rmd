@@ -1,0 +1,68 @@
+---
+title: "B.4. Prodemocratic versus antidemocratic citizens"
+---
+
+```{r}
+source("source_file.R")
+```
+
+List with models:
+```{r}
+models_list = list(
+ h1 = "autdem ~ lrscale + (1 | country)",
+ h2a = "autdem ~ lrscale + exp + age + survey + lrscale*exp + 
+ lrscale*age + lrscale*survey + (1 | country)",
+ h2b = "autdem ~ lrscale + exposure + lrscale*exposure + age_cat + lrscale*age_cat + 
+ survey + lrscale*exposure + lrscale*survey + (1 | country)",
+ h2c = "autdem ~ lrscale + exposure_age + lrscale*exposure_age + 
+ age + survey + lrscale*age + lrscale*survey + (1 | country)" )
+```
+
+Rescale variables in analyses (to avoid non-convergence):
+```{r}
+rescale = function(x) {x = x - min(x, na.rm = TRUE); x = x/max(x, na.rm = TRUE)} # function to rescale to 0-1 scale
+df$lrscale = rescale(df$lrscale); df$age = rescale(df$age); df$exposure = rescale(df$exposure)
+```
+
+Subsets for pro and antidemocratic citizens:
+```{r}
+prodem = subset(df, autdem >= 0); antidem = subset(df, autdem <= 0)
+```
+
+Multilevels for prodemocratic citizens:
+```{r}
+library(lme4)
+library(lmerTest)
+library(papeR)
+
+proantidem_test = function(data, name) {
+ list = list()
+ for (i in c(1:4)) {
+  model = lmer(models_list[[i]], data = data); model = prettify(summary(model))
+  model$legacy = unique(data$legacy)[1]; model$model = paste("Model", i)
+  list[[i]] = model}
+ list = do.call(rbind, list)
+ list$type = name
+ return(list)}
+```
+
+Estimate and save parameters for different subsets of data:
+```{r}
+proantidem_df = 
+ rbind(proantidem_test(subset(prodem, legacy == "Right-Wing"), "Prodemocratic"),
+       proantidem_test(subset(prodem, legacy == "Left-Wing"), "Prodemocratic"),
+       proantidem_test(subset(antidem, legacy == "Right-Wing"), "Antidemocratic"),
+       proantidem_test(subset(antidem, legacy == "Left-Wing"), "Antidemocratic"))
+```
+
+```{r}
+proantidem_df
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(subset(proantidem_df, model == "Model 1"), aes(x = Parameter, y = Estimate, color = type)) +
+ facet_grid(.~legacy)
+```
+

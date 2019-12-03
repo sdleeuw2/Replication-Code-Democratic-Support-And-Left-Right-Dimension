@@ -1,0 +1,37 @@
+---
+title: "Validation Dependent Variable"
+---
+
+Directories:
+```{r}
+source("source_file.R")
+```
+
+```{r}
+df = read.csv(paste0(data_dir, "wvs-merged.csv"))
+```
+
+Inverse negatively coded items so that correlations are all positive:
+```{r}
+df$dap_dem = (max(df$dap_dem, na.rm = TRUE) + 1) - df$dap_dem
+df$dap_better = (max(df$dap_better, na.rm = TRUE) + 1) - df$dap_better
+```
+
+Matrix of items:
+```{r}
+matrix = as.matrix(subset(df, select = c(
+ "dap_strongleader", "dap_army", "dap_dem", "dap_economy", 
+ "dap_indecisive", "dap_order", "dap_better")))
+```
+
+Correlations (should all be positive after inversion of variables):
+```{r}
+Hmisc::rcorr(matrix)[1]
+```
+
+Calculate Cronbach's Alpha:
+```{r}
+ltm::cronbach.alpha(matrix, standardized = TRUE, CI = TRUE, probs = c(0.025, 0.975), B = 1000, na.rm = TRUE)
+```
+
+

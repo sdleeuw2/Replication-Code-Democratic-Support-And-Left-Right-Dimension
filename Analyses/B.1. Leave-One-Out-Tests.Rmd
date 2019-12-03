@@ -1,0 +1,84 @@
+---
+title: "B.1. Leave-One-Out Tests"
+---
+
+Directories:
+```{r}
+source("source_file.R")
+```
+
+Import data:
+```{r}
+df = read.csv(paste0(data_dir, "wvs-merged.csv"))
+agg = read.csv(paste0(data_dir, "authors-country_data.csv"))
+```
+
+List with models:
+```{r}
+models_list = list(
+ h1 = "autdem ~ lrscale + (1 | country)",
+ h1d = "autdem ~ lrscale + legacy + lrscale*legacy + (1 + lrscale | country)",
+ h2a = "autdem ~ lrscale + exp + age + survey + lrscale*exp + 
+ lrscale*age + lrscale*survey + (1 | country)",
+ h2b = "autdem ~ lrscale + exposure + lrscale*exposure + age_cat + lrscale*age_cat + 
+ survey + lrscale*exposure + lrscale*survey + (1 | country)",
+ h2c = "autdem ~ lrscale + exposure_age + lrscale*exposure_age + 
+ age + survey + lrscale*age + lrscale*survey + (1 | country)" )
+```
+
+`function` to perform Leave-One Out Test:
+```{r}
+loo_save = function(legacy_chr, formula_chr, modelname_chr) {
+ 
+ library(lme4)
+ library(lmerTest)
+ 
+ legacy = subset(df, legacy == legacy_chr) # subset legacy
+ legacy$country_no = as.numeric(factor(legacy$country)) # numeric country identifyer
+ legacy$country = factor(legacy$country)
+
+  for (i in c(1:max(legacy$country_no))) {
+    data = subset(legacy, country_no != i)
+    name = paste0("loo-", modelname_chr, unique(legacy$country)[i], ".txt")
+    sink(paste0(robust_dir, name))
+    print(summary(lmer(formula_chr, data = data)))
+    sink()
+    } 
+}
+
+loo_save2 = function(formula_chr, modelname_chr) {
+ 
+ legacy = subset(df, !is.nan(autdem) & !is.na(autdem) & !is.nan(lrscale) & !is.na(lrscale)) # subset 
+ legacy$legacy = factor(legacy$legacy)
+ legacy$country_no = as.numeric(factor(legacy$country)) # numeric country identifyer
+ legacy$country = factor(legacy$country)
+
+ for (i in c(1:max(legacy$country_no))) {
+    data = subset(legacy, country_no != i)
+    name = paste0("loo-", modelname_chr, unique(legacy$country)[i], ".txt")
+    sink(paste0(robust_dir, name))
+    print(summary(lmer(formula_chr, data = data)))
+    sink()
+    } 
+}
+```
+
+Hypothesis 1:
+```{r}
+loo_save("Right-Wing", models_list$h1, "m1a_") # M1a
+loo_save("Left-Wing", models_list$h1, "m1b_") # M1b
+loo_save("Democratic", models_list$h1, "m1c_") # M1c
+loo_save2(models_list$h1d, "m1d_") # M1d
+```
+
+Hypothesis 2:
+```{r}
+loo_save("Right-Wing", models_list$h2a , "m2a_") # M2a
+loo_save("Left-Wing", models_list$h2a, "m2b_") # M1b
+loo_save("Right-Wing", models_list$h2b , "m3a_") # M2a
+loo_save("Left-Wing", models_list$h2b, "m3b_") # M1b
+loo_save("Right-Wing", models_list$h2c , "m4a_") # M2a
+loo_save("Left-Wing", models_list$h2c, "m4b_") # M1b
+```
+
+
