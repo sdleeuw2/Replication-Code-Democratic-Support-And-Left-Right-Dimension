@@ -56,13 +56,39 @@ proantidem_df =
 ```
 
 ```{r}
-proantidem_df
+colnames(proantidem_df)[1] = "Parameter"
+relevant_pars = subset(proantidem_df, Parameter == "lrscale" | Parameter == "lrscale:exp1" | 
+                       Parameter == "lrscale:exposure" | Parameter == "lrscale:exposure_age4")
+relevant_pars$Num = as.numeric(as.factor(relevant_pars$Parameter))
+relevant_pars
+```
+```{r}
+subset(relevant_pars, Parameter == "lrscale:exposure")
 ```
 
 
 ```{r}
+relevant_pars$se = relevant_pars$`Std. Error`
+
 library(ggplot2)
-ggplot(subset(proantidem_df, model == "Model 1"), aes(x = Parameter, y = Estimate, color = type)) +
- facet_grid(.~legacy)
+ggplot(relevant_pars, aes(x = Num, y = Estimate, color = type)) +
+ geom_hline(yintercept = 0, size = 0.2, color = "grey20") +
+ geom_errorbar(data = subset(relevant_pars, type == "Prodemocratic"), 
+               aes(ymax = Estimate + se, ymin = Estimate - se, x = Num - 0.1), width = 0.2) +
+ geom_errorbar(data = subset(relevant_pars, type == "Antidemocratic"), 
+               aes(ymax = Estimate + se, ymin = Estimate - se, x = Num + 0.1), width = 0.2) +
+ geom_point(data = subset(relevant_pars, type == "Prodemocratic"), 
+            aes(x = Num - 0.1, y = Estimate), size = 1, shape = 21, fill = "white") + 
+ geom_point(data = subset(relevant_pars, type == "Antidemocratic"), 
+            aes(x = Num + 0.1, y = Estimate), size = 1, shape = 21, fill = "white") + 
+ scale_color_manual(values = c("grey20", "grey60")) + 
+ scale_x_continuous(breaks = c(1:4), labels = c("Left-Right", "Left-Right x Experience", 
+                                                "Left-Right x Exposure", "Left-Right x Early Exposure")) +
+ theme_minimal() + coord_flip() +
+ theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.title = element_blank(),
+       legend.position = "bottom", legend.title = element_blank()) + 
+ facet_grid(model~legacy)
+
+ggsave(paste0(out_dir, "annex_proantidem.png"), width = 8, height = 6)
 ```
 
