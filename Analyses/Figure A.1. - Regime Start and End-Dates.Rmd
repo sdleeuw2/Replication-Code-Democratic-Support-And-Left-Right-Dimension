@@ -1,0 +1,57 @@
+---
+title: "A.1. Regime Start- and EndDates"
+description: Code for Annex A.1.2. Validation Start and End-Dates
+---
+
+Directories:
+```{r}
+source("source_file.R")
+```
+
+Read data and create id within countries:
+```{r}
+vdem = read.csv(paste0(data_dir, "vdem-country_year.csv"))
+vdem$id = with(vdem, ave(rep(1, nrow(vdem)), country, FUN = seq_along)) # id variable
+```
+
+`function` to rescale variables from 0 to 1
+```{r}
+rescale = function(x) {
+ x = x - min(x, na.rm = TRUE)
+ x = x / max(x, na.rm = TRUE)
+ return(x)
+}
+```
+
+Rescale so that higher values indicate more authoritarian characteristics:
+```{r}
+vdem$indoctrination_r = (rescale(vdem$indoctrination)*-1)+1 ; summary(vdem$indoctrination_r)
+vdem$repression_r = (rescale(vdem$repression)*-1)+1 ; summary(vdem$repression_r)
+vdem$electdem_r = (rescale(vdem$electdem)*-1)+1 ; summary(vdem$electdem)
+```
+
+Stack data:
+```{r}
+vdem_stack = rbind(
+ data.frame(country = vdem$country, year = vdem$year, startyear = vdem$startyear, 
+   endyear = vdem$endyear, measure = "Repression", value = vdem$repression_r, id = vdem$id), 
+ data.frame(country = vdem$country, year = vdem$year, measure = "Indoctrination", 
+   value = vdem$indoctrination_r, startyear = vdem$startyear, endyear = vdem$endyear, id = 0),
+ data.frame(country = vdem$country, year = vdem$year, measure = "Illiberal Democracy", 
+   value = vdem$electdem_r, startyear = vdem$startyear, endyear = vdem$endyear, id = 0))
+```
+
+Plot validation of regime start- and end-date:
+```{r}
+library(ggplot2)
+
+ggplot(data = vdem_stack, aes(x = year, y = value, linetype = measure)) + 
+ geom_rect(alpha = 0.5, color = NA, fill = "grey60",
+ data = subset(vdem2, id == 1), aes(xmin = startyear, xmax = endyear, ymin = -Inf, ymax = Inf)) + 
+ geom_line() + facet_wrap(.~country, ncol = 5) + theme_minimal() + 
+ theme(axis.title = element_blank(), axis.text.x = element_text(angle = 90),
+       legend.position = "bottom", legend.title = element_blank())
+
+ggsave(paste0(out_dir, "annex_validateclass.png"), width = 8, height = 12)
+```
+

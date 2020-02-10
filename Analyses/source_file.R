@@ -1,8 +1,8 @@
-
 location_folder = "/Users/sjifradeleeuw/GitHub/" # change location
 
 data_dir = paste0(location_folder, "Replication-Code-Democratic-Support-And-Left-Right-Dimension/Data/") # do not change
-out_dir = paste0(location_folder, "Replication-Code-Democratic-Support-And-Left-Right-Dimension/") # do not change
+fig_dir = paste0(location_folder, "Replication-Code-Democratic-Support-And-Left-Right-Dimension/Output/Figures/") # do not change
+tab_dir = paste0(location_folder, "Replication-Code-Democratic-Support-And-Left-Right-Dimension/Output/Tables/")
 robust_dir = paste0(location_folder, "Replication-Code-Democratic-Support-And-Left-Right-Dimension/Output/Appendices/") # do not change
 
 # import data
@@ -22,3 +22,5 @@ df = data.frame(
               "equality1", "equality2", "equality3", "equality", "weight", "weight_split", "weight2", "weight2_split", 
               "sampsize", "lb", "ub", "corr", "startyear", "endyear", "duration", "indoc_mean",
               "repr_mean", "indoc_max", "repr_max", "indoctrination_r", "repression_r")), as.numeric))
+
+df = subset(df, !is.na(autdem) & !is.na(lrscale))

@@ -1,0 +1,75 @@
+---
+title: "Table 2"
+---
+
+Import Libraries:
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+library(lme4)
+library(lmerTest)
+library(boot)
+library(lm.beta)
+library(memisc)
+library(plyr)
+```
+
+Import Data:
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+source("source_file.R")
+```
+
+Functions:
+```{r}
+# Function to Calculate ICC Country-Random Effects Only
+icc0 = function(model) {
+ varcorr = data.frame(VarCorr(model)); varcntry = subset(varcorr, grp == "country")
+ varresidual = subset(varcorr, grp == "Residual"); icc = (varcntry$vcov) / (varcntry$vcov + varresidual$vcov)
+ return(icc)
+ }
+
+# Summary Function 
+h1a_summ = function(model, model_boot, modelname) {
+ model_summ = cbind(
+  data.frame(variable = c("intercept", "left-right")), data.frame(coeff = round(model@beta[1:2],3)), icc = icc0(model),
+  data.frame(SE = round(rbind(model@vcov_beta[1,1], model@vcov_beta[2,2]), 3)), 
+  data.frame(lower = round(model_boot[1:2,1], 3)), data.frame(upper = round(model_boot[1:2,2], 3)))
+ model_summ$be_se = paste0(format(model_summ$coeff, 3), "(", format(model_summ$SE, 3), ")")
+ model_summ$ci = paste0("[", format(model_summ$lower), ";", format(model_summ$upper),"]")
+ writexl::write_xlsx(model_summ, paste0(tab_dir, modelname, ".xlsx"))
+ return(model_summ)}
+```
+
+Hypothesis 1a
+```{r}
+models = list()
+boots = list()
+
+for (i in c(1:3)) {
+ sub = subset(df, legacy == unique(df$legacy)[i])
+ models[[i]] = lmer(autdem ~ lrscale + (1 | country), data = sub) # main ML
+ boots[[i]] = confint(models[[i]], parm = c(3:4), method = "boot", nsim = 5000, seed = 1993, level = 0.9) # boot CIs
+}
+
+h1a_summ(models[[1]], boots[[1]], "M1b") 
+h1a_summ(models[[2]], boots[[2]], "M1a")
+h1a_summ(models[[3]], boots[[3]], "M1c")
+```
+
+Hypothesis 1b 
+```{r}
+m1d = lmer(autdem ~ lrscale + legacy + legacy*lrscale + (1 + lrscale | country), data = df)
+m1d_boot = confint(m1d, parm=c(5:10), method = "boot", nsim = 1000, seed = 1993, level = 0.9)
+
+summ = cbind(data.frame(
+ parameter = c("intercept", "lrscale", "left-wing", "right-wing", "lw*lrscale", "rw*lrscale"),  
+ value = round(c(m1d@beta[1], m1d@beta[2], m1d@beta[3], m1d@beta[4], m1d@beta[5], m1d@beta[6]),3)),
+ se = round(c(0.13230, 0.01329, 0.16436, 0.22897, 0.01648, 0.02299),3),
+ lower = round(data.frame(m1d_boot)[,1],3), upper = round(data.frame(m1d_boot)[,2],3))
+
+summ$be_se = paste0(format(summ$value, 3), "(", format(summ$se, 3), ")")
+summ$ci = paste0("[", format(summ$lower), ";", format(summ$upper),"]")
+
+writexl::write_xlsx(summ, paste0(tab_dir, "m1d.xlsx"))
+
+print(paste("ICC is:", (0.206922 + 0.002025) / (0.907667 + 0.206922 + 0.002025)))
+```
+

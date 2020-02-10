@@ -1,0 +1,203 @@
+---
+title: "Figure 3: Individual Legacy Effects"
+---
+
+Libraries:
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+lapply(c("mgcv", "gamm4", "rstanarm", "ggpubr", "ggplot2", "plyr", "dplyr", "mgcViz"), require, character.only = TRUE)
+```
+
+Import Data:
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+source("source_file.R")
+df = subset(df, legacy!="Democratic")
+```
+
+Run Generalized Additive Mixed Models (GAMMs) with random intercepts per country:
+```{r}
+h2a_gamms = list() # Hypothesis 2a
+for (i in c(1:2)) {h2a_gamms[[i]] = stan_gamm4(autdem ~  s(lrscale, k = 10, by = exp), 
+ data = subset(df, legacy == unique(df$legacy)[i]), random = ~ (1 | country), chains = 2, iter = 3500)}
+
+h2b_gamms = list() # Hypothesis 2b
+df$exposure_int = df$exposure * df$lrscale
+for (i in c(1:2)) {h2b_gamms[[i]] = stan_gamm4(autdem ~ s(exposure_int, k = 10) + exposure + lrscale,
+ data = subset(df, legacy == unique(df$legacy)[i]), random = ~ (1 | country), chains = 2, iter = 3500, seed = 1993)}
+
+h2c_gamms = list() # Hypothesis 2c
+for (i in c(1:2)) {h2c_gamms[[i]] = stan_gamm4(autdem ~  s(lrscale, k = 10, by = exposure_age),
+ data = subset(df, legacy == unique(df$legacy)[i]), random = ~ (1 | country), chains = 2, iter = 3500, seed = 1993)}
+```
+
+```{r}
+valmin = 0.75
+valmax = 1.25
+legpos = c(.3, .15) 
+```
+
+H2a: Experience
+```{r}
+datapred_nonlinear = list()
+
+iter = 1500
+
+for (i in c(1:2)) {
+ model = c("(b) ", "(a) ")
+ nd_no = subset(selectdata, legacy == unique(selectdata$legacy)[i] & exp == "0")
+ nd_no = nd_no[sample(c(1:length(nd_no$lrscale)), 1500, replace = FALSE),]
+ nd_no_pred = posterior_predict(h2a_gamms[[i]], nd_no, draws = iter)
+ datapred_nonlinear[[i]] = data.frame(legacy = unique(selectdata$legacy)[i], model[i],
+  pred = c(nd_no_pred), lrscale = rep(nd_no$lrscale, each = iter), 
+  autdem = rep(nd_no$autdem, each = iter), experience = "No Experience")
+ 
+ j = i + 2
+ nd_yes = subset(selectdata, legacy == unique(selectdata$legacy)[i] & exp == "1")
+ nd_yes = nd_yes[sample(c(1:length(nd_yes$lrscale)), 1500, replace = FALSE),]
+ nd_yes_pred = posterior_predict(h2a_gamms[[i]], nd_yes, draws = iter)
+ datapred_nonlinear[[j]] = data.frame(legacy = unique(selectdata$legacy)[i], model[i],
+ pred = c(nd_yes_pred), lrscale = rep(nd_yes$lrscale, each = iter), 
+ autdem = rep(nd_yes$autdem, each = iter), experience = "Experience")
+}
+
+datapred_nonlinear = do.call(rbind, datapred_nonlinear)
+datapred_nonlinear$model = paste0(datapred_nonlinear$model, "Experience: ", datapred_nonlinear$legacy)
+```
+
+```{r}
+h2a_lw = ggplot(subset(datapred_nonlinear, legacy == "Left-Wing"), 
+                aes(x = lrscale, y = autdem, linetype = experience)) + 
+ geom_hline(yintercept = 0, color = "grey30", size = 0.5) + 
+ geom_smooth(color = "black", size = 0.5, se = FALSE) + 
+ geom_smooth(color = "black", size = 0.5, se = FALSE) + 
+ scale_x_continuous(breaks = seq(0,10,1)) + ylim(0, 1.5) +
+ theme_minimal() + ylab("Democratic Support") + xlab("Left-Right Orientation") + 
+ theme(legend.position =  legpos, axis.title = element_text(size = 8), 
+       panel.grid.minor = element_blank(), strip.text = element_text(size = 10), 
+       legend.title = element_blank(), legend.text = element_text(size = 8)) + facet_grid(.~model) 
+
+h2a_rw = ggplot(subset(datapred_nonlinear, legacy == "Right-Wing"), 
+                aes(x = lrscale, y = autdem, linetype = experience)) + 
+ geom_hline(yintercept = 0, color = "grey30") + 
+ geom_smooth(color = "black", size = 0.5, level = 0.9) + 
+ scale_x_continuous(breaks = seq(0,10,1)) + ylim(valmin, valmax) + 
+ theme_minimal() + ylab("Democratic Support") + xlab("Left-Right Orientation") + 
+ theme(legend.position =  legpos, axis.title = element_text(size = 8), 
+       panel.grid.minor = element_blank(), strip.text = element_text(size = 10), 
+       legend.title = element_blank(), legend.text = element_text(size = 8)) + facet_grid(.~model) 
+```
+
+H2b: Exposure
+```{r}
+datapred_nonlinear_h2b = list()
+
+iter = 1500
+
+for (i in c(1:2)) {
+ model = c("(c) ", "(d) ")
+ newdata = subset(selectdata, legacy == unique(selectdata$legacy)[i])
+ newdata = newdata[sample(c(1:length(newdata$lrscale)), 1500, replace = FALSE),]
+ newdata_pred = posterior_predict(h2b_gamms[[i]], newdata, draws = iter)
+ datapred_nonlinear_h2b[[i]] = data.frame(legacy = unique(selectdata$legacy)[i], model[i],
+  autdem = c(newdata_pred), lrscale = rep(newdata$lrscale, each = iter), experience = NA)
+}
+
+datapred_nonlinear_h2b = do.call(rbind, datapred_nonlinear_h2b)
+datapred_nonlinear_h2b$model = paste0(datapred_nonlinear_h2b$model, "Duration of Exposure: ", datapred_nonlinear_h2b$legacy)
+```
+
+```{r}
+outlist_h2b = list()
+
+for (i in c(0:max(datapred_nonlinear_h2b$exposure, na.rm = TRUE))) {
+ sub = subset(datapred_nonlinear_h2b, exposure == i)
+ if (length(sub$lrscale) > 1) {
+  reg = lm(pred ~ lrscale, data = sub); coeff = reg$coefficients[2]; 
+  se = sqrt(diag(vcov(reg)))[2]
+  j = i + 1; outlist_h2b[[j]] = data.frame(beta = coeff, stderr = se)
+ } else { 
+  outlist_h2b[[j]] = data.frame(beta = NA, stderr = NA)}}
+
+outlist_h2b = do.call(rbind, outlist_h2b)
+outlist_h2b$exposure = c(0:(length(outlist_h2b$beta)-1))
+```
+
+```{r}
+h2b_lw = ggplot(data = subset(outlist_h2b, legacy == "Left-Wing"), aes(x = exposure, y = beta)) + 
+ geom_hline(yintercept = 0.007070212) + 
+ geom_smooth(level = 0.9, color = "grey30", size = 0.5) + 
+ facet_grid(.~ "(c) Exposure: Left-Wing") + theme_minimal() + 
+ xlab("Years of Exposure") + ylab("Effect Left-Right Orientation") + 
+ scale_x_continuous(breaks = seq(0, 80, 8), labels = seq(0,80,8)) + ylim(-0.1, 0.15) + 
+ theme(panel.grid.minor = element_blank(), strip.text = element_text(size = 10), 
+       axis.title = element_text(size = 8))
+
+h2b_rw = ggplot(data = subset(outlist_h2b, legacy == "Right-Wing"), aes(x = exposure, y = beta)) + 
+ geom_hline(yintercept = -0.07434617) + 
+ geom_smooth(level = 0.9, color = "grey30", size = 0.5) + 
+ facet_grid(.~ "(d) Exposure: Right-Wing") + theme_minimal() + 
+ xlab("Years of Exposure") + ylab("Effect Left-Right Orientation") + ylim(-0.1, 0.15) + 
+ scale_x_continuous(breaks = seq(0, 50, 5), labels = seq(0,50,5)) + 
+ theme(panel.grid.minor = element_blank(), strip.text = element_text(size = 10), 
+       axis.title = element_text(size = 8))
+
+```
+
+Hypothesis 2c
+```{r}
+datapred_nonlinear_h2c = list()
+
+iter = 1500
+
+for (i in c(1:2)) {
+ model = c("(e) ", "(f) ")
+ nd_no = subset(selectdata, legacy == unique(selectdata$legacy)[i] & exposure_age == "1")
+ nd_no = nd_no[sample(c(1:length(nd_no$lrscale)), 1500, replace = FALSE),]
+ nd_no_pred = posterior_predict(h2a_gamms[[i]], nd_no, draws = iter)
+ datapred_nonlinear_h2c[[i]] = data.frame(legacy = unique(selectdata$legacy)[i], model[i],
+  autdem = c(nd_no_pred), lrscale = rep(nd_no$lrscale, each = iter), experience = "No Exposure")
+ 
+ j = i + 2
+ nd_yes = subset(selectdata, legacy == unique(selectdata$legacy)[i] & exposure_age == "4")
+ nd_yes = nd_yes[sample(c(1:length(nd_yes$lrscale)), 1500, replace = FALSE),]
+ nd_yes_pred = posterior_predict(h2a_gamms[[i]], nd_yes, draws = iter)
+ datapred_nonlinear_h2c[[j]] = data.frame(legacy = unique(selectdata$legacy)[i], model[i],
+ autdem = c(nd_yes_pred), lrscale = rep(nd_yes$lrscale, each = iter), experience = "Early Exposure")
+}
+
+datapred_nonlinear_h2c = do.call(rbind, datapred_nonlinear_h2c)
+datapred_nonlinear_h2c$model = paste0(datapred_nonlinear_h2c$model, "Age of Exposure: ", datapred_nonlinear_h2c$legacy)
+```
+
+```{r}
+h2c_lw = ggplot(subset(datapred_nonlinear_h2c, legacy == "Left-Wing"), 
+                aes(x = lrscale, y = autdem, linetype = experience)) + 
+ geom_hline(yintercept = 0, color = "grey30") + geom_smooth(color = "black", size = 0.5, level = 0.9) + 
+ scale_x_continuous(breaks = seq(1,10,1)) + ylim(valmin, valmax) +
+ theme_minimal() + ylab("Democratic Support") + xlab("Left-Right Orientation") + 
+ theme(legend.position =  legpos, panel.grid.minor = element_blank(), 
+       strip.text = element_text(size = 10), legend.title = element_blank(),
+       axis.title = element_text(size = 8), legend.text = element_text(size = 8)) + 
+ facet_grid(.~model) 
+
+h2c_rw = ggplot(subset(datapred_nonlinear_h2c, legacy == "Right-Wing"), 
+                aes(x = lrscale, y = autdem, linetype = experience)) + 
+ geom_hline(yintercept = 0, color = "grey30") + geom_smooth(color = "black", size = 0.5, level = 0.9) + 
+ ylim(valmin, valmax) + scale_x_continuous(breaks = seq(1,10,1)) + 
+ theme_minimal() + ylab("Democratic Support") + xlab("Left-Right Orientation") + 
+ theme(legend.position =  legpos, panel.grid.minor = element_blank(), 
+       strip.text = element_text(size = 10), legend.title = element_blank(),
+       axis.title = element_text(size = 8), legend.text = element_text(size = 8)) + 
+ facet_grid(.~model) 
+```
+
+```{r}
+ggpubr::ggarrange(h2a_lw, h2b_lw, h2c_lw, h2a_rw, h2b_rw, h2c_rw, ncol = 3, nrow = 2)
+
+dev.copy(png,paste0(fig_dir, 'Figure 3 - Individual Legacy Effects.png'), 
+         width = 3500, height = 2500, res=400)
+dev.off()
+```
+
+
+
+

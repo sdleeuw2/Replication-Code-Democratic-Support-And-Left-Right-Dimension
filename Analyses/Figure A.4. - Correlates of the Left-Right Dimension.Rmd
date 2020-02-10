@@ -1,0 +1,82 @@
+---
+title: "A.4. Correlates of the Left-Right Dimension"
+---
+
+Directories and data:
+```{r}
+source("source_file.R")
+```
+
+`function` to calculate country-clustered correlations:
+```{r}
+corr_frame = function(variable) {
+ library(ggpubr)
+ df$leg_no = as.numeric(factor(df$legacy))
+ corrlist = list()
+ 
+ for (i in c(1:3)) { # start legacy loop
+  legacy = subset(df, leg_no == i) # subset legacy
+  
+  legacy$country_no = as.numeric(factor(legacy$country)) # numeric country vector for loop
+  countrycorrs = list() # empty list to store counrtry correlations 
+  
+  for (j in c(1:length(unique(legacy$country_no)))) { # start country loop
+   country = subset(legacy, country_no == j) # subset country
+   var = subset(country, select = c(variable))[,1] # select variable
+   
+   if (length(var[!is.na(var)] > 1)) { # if country has observations ...
+    correlation = cor.test(var, country$lrscale, method = "pearson") # ... calculate correlation
+    countrycorrs[[j]] = data.frame(
+     lb = c(correlation[[9]])[1], ub = c(correlation[[9]])[2], corr = c(correlation[[4]]))} 
+  } # end country loop
+  
+  countrycorrs = data.frame(do.call(rbind, countrycorrs))
+  countrycorrs = lapply(countrycorrs, mean)
+  corrlist[[i]] = data.frame(countrycorrs)
+  
+ } # end legacy loop
+ 
+ corrlist = data.frame(do.call(rbind, corrlist))
+ corrlist$legacy = c("Democratic", "Left-Authoritarian", "Right-Authoritarian")
+ 
+ return(corrlist)
+}
+``` 
+ 
+Dataframe of correlations:
+```{r}
+corrs = data.frame(rbind(
+ cbind(var = "Democratic Support", corr_frame("autdem")), 
+ cbind(var = "Nationalism", corr_frame("nat")), 
+ cbind(var = "Social Policy", corr_frame("socpol")), 
+ cbind(var = "Income Inequality", corr_frame("inceq")), 
+ cbind(var = "Liberalism", corr_frame("lib")), 
+ cbind(var = "Gender Equality", corr_frame("equality")) 
+ ))
+```
+
+```{r}
+corrs$var2 = as.numeric(corrs$var)
+width = 0.10
+vspace = 0.22
+
+ggplot2::ggplot(data = corrs, aes(x = var2, y = corr, fill = legacy)) + coord_flip() +
+ ylab("Country-Clustered Correlation with Left-Right Orientation") +
+ geom_hline(yintercept = 0, size = 0.5, color = "grey50") + 
+ geom_rect(data=subset(corrs, legacy == "Democratic"), alpha=0.5,
+           mapping=aes(xmin=var2-width, xmax=var2+width, ymin=lb, ymax=ub)) + 
+ geom_rect(data=subset(corrs, legacy == "Left-Authoritarian"), alpha=0.5,
+           mapping=aes(xmin=var2-width+vspace, xmax=var2+width+vspace, ymin=lb, ymax=ub)) +
+ geom_rect(data=subset(corrs, legacy == "Right-Authoritarian"), alpha=0.5,
+           mapping=aes(xmin=var2-width-vspace, xmax=var2+width-vspace, ymin=lb, ymax=ub)) +
+ geom_point(data = subset(corrs, legacy == "Democratic"), aes(x=var2,y=corr)) +
+ geom_point(data = subset(corrs, legacy == "Right-Authoritarian"), aes(x=var2-vspace,y=corr)) +
+ geom_point(data = subset(corrs, legacy == "Left-Authoritarian"), aes(x=var2+vspace,y=corr)) +
+ scale_x_continuous(breaks = seq(1,6,1), labels = unique(corrs$var)) + theme_minimal() + 
+ scale_fill_manual(values = c("black", "grey40", "grey80")) + 
+ theme(panel.grid.minor.y = element_blank(), axis.title.y = element_blank(),
+       axis.title.x = element_text(size = 8), legend.title = element_blank(), 
+       legend.position = "bottom")
+
+ggsave(paste0(fig_dir, "annex_lrcorrs.png"), width = 6, height = 6)
+```

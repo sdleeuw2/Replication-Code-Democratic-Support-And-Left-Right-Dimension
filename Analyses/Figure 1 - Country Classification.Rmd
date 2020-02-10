@@ -1,0 +1,78 @@
+---
+title: "Figure 1 - Country Classification"
+---
+
+Load libraries 
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+library(mapproj)
+library(rworldmap)
+library(plyr)
+```
+
+Import data and directories
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+source("source_file.R")
+```
+
+Acquires the worldmap and creates a vector containing the countries you want in your map
+```{r}
+worldMap = getMap()
+countries = unique(subset(data.frame(continent = as.character(worldMap$Stern), 
+             country = as.character(worldMap$REGION)), continent == "Europe"))$country
+countries = which(worldMap$REGION%in%countries)
+
+coordinates = lapply(countries, function(i){
+  df = data.frame(worldMap@polygons[[i]]@Polygons[[1]]@coords)
+  df$country = as.character(worldMap$NAME[i])
+  colnames(df) = list("long", "lat", "country")
+  return(df)
+  })
+
+coordinates = do.call("rbind", coordinates)
+```
+
+Obtain the values necessary for the map from your own data and merge with coordinates
+```{r}
+country_data$country = as.character(country_data$country)
+country_data$legacy = as.character(country_data$legacy)
+country_data$country[country_data$country == "Bosnia"] = 'Bosnia and Herz.'
+country_data$country[country_data$country == "Czechia"] = 'Czech Rep.'
+```
+
+Merge country values with coordinate data
+```{r}
+coordinates$legacy = NA
+
+obtain = function(cntry) {
+ coordinates$legacy[coordinates$country == cntry] = subset(country_data, country == cntry)[,8]
+ return(coordinates)}
+
+for (i in unique(country_data$country)) {coordinates = obtain(i)}
+
+coordinates$legacy[coordinates$country=="Kosovo"] = "Left-Wing"
+coordinates$legacy[coordinates$country=="Montenegro"] = "Left-Wing"
+coordinates$legacy[coordinates$country=="Germany"] = "Right-Wing"
+coordinates = subset(coordinates, !is.na(legacy))
+```
+
+Plot
+```{r}
+library(ggplot2)
+ggplot() + 
+  geom_polygon(data = coordinates, 
+    aes(x = long, y = lat, group = country, fill = legacy), colour = "black", size = 0.1) + 
+  geom_polygon(data = subset(coordinates, country == "Germany" & long>=10.319),  
+    aes(x = long, y = lat, group = country), colour = "black", size = 0.1, alpha=0.9, fill = "grey45") +
+  scale_fill_manual(values = c("grey90", "grey45", "grey10")) +
+  coord_map(xlim = c(-10, 40),  ylim = c(35, 72)) + 
+  theme_void() + 
+  theme(
+    axis.text = element_blank(), axis.ticks = element_blank(), 
+    axis.title = element_blank(), legend.title = element_blank(),
+    #plot.margin = unit(0 * c(-1.5, -1.5, -1.5, -1.5), "lines"),
+    legend.justification = "center", legend.position = "bottom") 
+
+
+dev.copy(png,paste0(fig_dir,'Figure 1 - Classification.png'), width = 1650, height = 2400, res=400)
+dev.off()
+```
