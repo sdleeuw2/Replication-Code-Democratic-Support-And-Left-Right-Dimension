@@ -55,24 +55,40 @@ coordinates$legacy[coordinates$country=="Germany"] = "Right-Wing"
 coordinates = subset(coordinates, !is.na(legacy))
 ```
 
+```{r}
+names = merge(aggregate(long ~ country, data = coordinates, FUN = mean),
+              aggregate(lat ~ country, data = coordinates, FUN = mean),
+              by = "country")
+names
+```
+
+
 Plot
 ```{r}
 library(ggplot2)
-ggplot() + 
+p = ggplot() + 
   geom_polygon(data = coordinates, 
     aes(x = long, y = lat, group = country, fill = legacy), colour = "black", size = 0.1) + 
   geom_polygon(data = subset(coordinates, country == "Germany" & long>=10.319),  
     aes(x = long, y = lat, group = country), colour = "black", size = 0.1, alpha=0.9, fill = "grey45") +
+  #geom_text(data = names, aes(x = long, y = lat, label = country), size = 3) + 
   scale_fill_manual(values = c("grey90", "grey45", "grey10")) +
-  coord_map(xlim = c(-10, 40),  ylim = c(35, 72)) + 
+  coord_map(xlim = c(-10, 170),  ylim = c(35, 80)) + 
   theme_void() + 
   theme(
     axis.text = element_blank(), axis.ticks = element_blank(), 
     axis.title = element_blank(), legend.title = element_blank(),
     #plot.margin = unit(0 * c(-1.5, -1.5, -1.5, -1.5), "lines"),
-    legend.justification = "center", legend.position = "bottom") 
+    legend.justification = "center", legend.position = "bottom")  + 
+  theme(
+    panel.background = element_rect(fill = "transparent"), # bg of the panel
+    plot.background = element_rect(fill = "transparent", color = NA), # bg of the plot
+    panel.grid.major = element_blank(), # get rid of major grid
+    panel.grid.minor = element_blank(), # get rid of minor grid
+    legend.background = element_rect(fill = "transparent")
+   )
 
-
-dev.copy(png,paste0(fig_dir,'Figure 1 - Classification.png'), width = 1650, height = 2400, res=400)
-dev.off()
+ggsave(p, filename = "tr_tst2.png",  bg = "transparent")
+#dev.copy(png,paste0(fig_dir,'Figure 1 - Classification.png'), width = 1650, height = 2400, res=400)
+#dev.off()
 ```
