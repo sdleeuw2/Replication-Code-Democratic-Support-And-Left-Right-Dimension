@@ -1,0 +1,22 @@
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+autdem ~ s(lrscale, k = 10, by = exp)
+
+Parametric coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 1.654638   0.006922   239.1   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                    edf Ref.df     F p-value    
+s(lrscale):expNo  7.992  8.727 39.39  <2e-16 ***
+s(lrscale):expYes 6.408  7.573 18.60  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0269   Deviance explained = 2.77%
+GCV = 0.82894  Scale est. = 0.8282    n = 17342

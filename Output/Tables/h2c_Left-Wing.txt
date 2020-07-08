@@ -1,0 +1,24 @@
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+autdem ~ s(lrscale, k = 10, by = exp_age)
+
+Parametric coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 0.952730   0.004172   228.4   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                                   edf Ref.df      F  p-value    
+s(lrscale):exp_ageNo Exposure    1.000  1.000  2.503    0.114    
+s(lrscale):exp_ageAdult Exposure 6.115  7.282  9.028 2.15e-11 ***
+s(lrscale):exp_ageFull Exposure  7.528  8.482 86.929  < 2e-16 ***
+s(lrscale):exp_ageEarly Exposure 7.222  8.257 14.641  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0148   Deviance explained = 1.52%
+GCV = 1.0569  Scale est. = 1.0565    n = 61135

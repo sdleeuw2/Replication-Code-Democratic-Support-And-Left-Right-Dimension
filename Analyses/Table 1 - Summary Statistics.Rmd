@@ -1,0 +1,60 @@
+---
+title: "Table 1: Summary Statistics"
+---
+
+```{r}
+source("source_file.R")
+df = subset(df, country!="Hungary" & country != "East Germany")
+
+rescale = function(x) {
+ x = x - min(x, na.rm = TRUE)
+ x = x/ max(x, na.rm = TRUE)}
+
+df$lrscale = rescale(df$lrscale)
+df$exposure = rescale(df$exposure)
+df$age = rescale(df$age)
+```
+
+```{r}
+descriptives = list()
+
+library(psych)
+
+summarizevar = function(var) {
+ row = data.frame(n = describe(var)$n, mean = describe(var)$mean, sd = describe(var)$sd, 
+                  min = describe(var)$min, max = describe(var)$max)
+ return(row)
+}
+
+for (i in c(1:4)) {
+ vars = list(df$autdem, df$lrscale, df$exposure, df$age)
+ namevar = c("Democratic Support", "Left-Right", "Years of Exposure", "Age (Continuous)")
+ descriptives[[i]] = cbind(summarizevar(vars[[i]]), name = namevar[i])
+}
+
+descriptives = do.call(rbind, descriptives)
+writexl::write_xlsx(descriptives, paste0(tab_dir, "Table 1.xlsx"))
+```
+
+```{r}
+desc_cat = list()
+
+summ_cat = function(var) {
+ data = data.frame(values = colnames(t(table(var))),
+           n = data.frame(t(table(var)))$Freq, 
+           proportion = data.frame(t(prop.table(table(var))))$Freq)
+ return(data)
+}
+
+for (i in c(1:4)) {
+ vars = list(df$exp, df$exposure_age, df$age_cat, df$survey)
+ namevar = c("Experience", "Age of Exposure", "Age (Categorical)", "Survey-Year")
+ desc_cat[[i]] = cbind(summ_cat(vars[[i]]), name = namevar[i])
+}
+
+desc_cat = do.call(rbind, desc_cat)
+
+writexl::write_xlsx(desc_cat, paste0(tab_dir, "Table 1 - Categorical.xlsx"))
+```
+
+

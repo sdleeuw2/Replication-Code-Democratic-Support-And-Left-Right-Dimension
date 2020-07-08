@@ -15,6 +15,7 @@ library(plyr)
 Import Data:
 ```{r message=FALSE, warning=FALSE, paged.print=FALSE}
 source("source_file.R")
+df = subset(df, country != "Hungary" & country != "East Germany")
 ```
 
 Functions:
@@ -27,15 +28,33 @@ icc0 = function(model) {
  }
 
 # Summary Function 
-h1a_summ = function(model, model_boot, modelname) {
- model_summ = cbind(
-  data.frame(variable = c("intercept", "left-right")), data.frame(coeff = round(model@beta[1:2],3)), icc = icc0(model),
-  data.frame(SE = round(rbind(model@vcov_beta[1,1], model@vcov_beta[2,2]), 3)), 
-  data.frame(lower = round(model_boot[1:2,1], 3)), data.frame(upper = round(model_boot[1:2,2], 3)))
- model_summ$be_se = paste0(format(model_summ$coeff, 3), "(", format(model_summ$SE, 3), ")")
- model_summ$ci = paste0("[", format(model_summ$lower), ";", format(model_summ$upper),"]")
+summarize_tab = function(model, modelname) {
+ dd.ML = lme4:::devfun2(model,useSc=TRUE,signames=FALSE)
+ 
+ model_summ = data.frame(
+  cbind(variable = rownames(model@vcov_beta), coeff = round(model@beta,3), icc = icc0(model)))
+ model_summ$coeff = as.numeric(as.character(model_summ$coeff))
+ library(sjstats)
+ model_summ$SE = se(model)[,2]
+ 
+ model_summ$SE[model_summ$SE == 0] = 0.001
+ model_summ = cbind(model_summ, n = nrow(model@frame))
+ model_summ$name = modelname
+ 
+ model_summ$lower = model_summ$coeff - (1.645*model_summ$SE)
+ model_summ$upper = model_summ$coeff + (1.645*model_summ$SE)
+ model_summ$n_country = length(unique(model@frame$country))
+ model_summ$name = modelname
+ 
  writexl::write_xlsx(model_summ, paste0(tab_dir, modelname, ".xlsx"))
  return(model_summ)}
+```
+
+```{r}
+rescale = function(x) {
+ x = x - min(x, na.rm = TRUE)
+ x = x/ max(x, na.rm = TRUE)}
+df$lrscale = rescale(df$lrscale)
 ```
 
 Hypothesis 1a
@@ -46,30 +65,137 @@ boots = list()
 for (i in c(1:3)) {
  sub = subset(df, legacy == unique(df$legacy)[i])
  models[[i]] = lmer(autdem ~ lrscale + (1 | country), data = sub) # main ML
- boots[[i]] = confint(models[[i]], parm = c(3:4), method = "boot", nsim = 5000, seed = 1993, level = 0.9) # boot CIs
+ boots[[i]] = confint(models[[i]], parm = c(3:4), method = "boot", nsim = 10000, seed = 1993, level = 0.9) 
 }
 
-h1a_summ(models[[1]], boots[[1]], "M1b") 
-h1a_summ(models[[2]], boots[[2]], "M1a")
-h1a_summ(models[[3]], boots[[3]], "M1c")
+save.image("workspace.RData")
 ```
 
 Hypothesis 1b 
 ```{r}
-m1d = lmer(autdem ~ lrscale + legacy + legacy*lrscale + (1 + lrscale | country), data = df)
-m1d_boot = confint(m1d, parm=c(5:10), method = "boot", nsim = 1000, seed = 1993, level = 0.9)
-
-summ = cbind(data.frame(
- parameter = c("intercept", "lrscale", "left-wing", "right-wing", "lw*lrscale", "rw*lrscale"),  
- value = round(c(m1d@beta[1], m1d@beta[2], m1d@beta[3], m1d@beta[4], m1d@beta[5], m1d@beta[6]),3)),
- se = round(c(0.13230, 0.01329, 0.16436, 0.22897, 0.01648, 0.02299),3),
- lower = round(data.frame(m1d_boot)[,1],3), upper = round(data.frame(m1d_boot)[,2],3))
-
-summ$be_se = paste0(format(summ$value, 3), "(", format(summ$se, 3), ")")
-summ$ci = paste0("[", format(summ$lower), ";", format(summ$upper),"]")
-
-writexl::write_xlsx(summ, paste0(tab_dir, "m1d.xlsx"))
-
-print(paste("ICC is:", (0.206922 + 0.002025) / (0.907667 + 0.206922 + 0.002025)))
+m1d_model = lmer(autdem ~ lrscale + legacy + legacy*lrscale + (1 + lrscale | country), data = df)
+m1d_boot = confint(m1d, parm=c(5:10), method = "boot", nsim = 10000, seed = 1993, level = 0.9)
+save.image("workspace.RData")
 ```
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+m1b = summarize_tab(models[[1]], "Model 1b") 
+m1a = summarize_tab(models[[2]], "Model 1a")
+m1c = summarize_tab(models[[3]], "Model 1c")
+m1d = summarize_tab(m1d_model, "Model 1d")
+
+results = do.call(rbind, list(m1a, m1b, m1c, m1d))
+
+bootframe = function(boot, modelname) {
+ bframe = data.frame(variable = rownames(data.frame(boot)),
+                     boot_lower = data.frame(boot)[,1],
+                     boot_upper = data.frame(boot)[,2])
+ bframe$name = modelname
+ return(bframe)
+}
+
+bootframes = rbind(bootframe(boots[[1]], "Model 1b"), 
+                   bootframe(boots[[2]], "Model 1a"),
+                   bootframe(boots[[3]], "Model 1c"),
+                   bootframe(m1d_boot, "Model 1d"))
+library(dplyr)
+results = data.frame(merge(results, bootframes, by = c("variable", "name"))) %>%
+ mutate_if(is.factor, as.character)
+
+results$coeff_boot = (results$boot_lower + results$boot_upper) / 2
+results$boot_se = abs(results$boot_upper - results$boot_lower) / 5.15
+
+library(plyr)
+results$variable = revalue(factor(results$variable),
+                           c("(Intercept)" = "Intercept", 
+                             "legacyLeft-Wing" = "Legacy Left-Wing", 
+                             "legacyRight-Wing" = "Legacy Right-Wing", 
+                             "lrscale" = "Left-Right", 
+                             "lrscale:legacyLeft-Wing" = "Left-Right * Left-Wing", 
+                             "lrscale:legacyRight-Wing" = "Left-Right * Right-Wing"
+                            ))
+
+results$var = as.numeric(as.character(revalue(factor(results$variable),
+                           c("Intercept" = "6", 
+                             "Legacy Left-Wing" = "4", 
+                             "Legacy Right-Wing" = "3", 
+                             "Left-Right" = "5", 
+                             "Left-Right * Left-Wing" = "2", 
+                             "Left-Right * Right-Wing" = "1"
+                            ))))
+```
+
+Density 
+```{r}
+norms = list()
+
+for (i in c(1:nrow(results))) {
+ row = results[i,]
+ dist = data.frame(
+  boot_lower = row$boot_lower, boot_upper = row$boot_upper,
+  variable = row$variable, name = row$name, var = row$var, 
+  distrib = rnorm(50000, row$coeff_boot, row$boot_se))
+ norms[[i]] = dist
+}
+
+norm = do.call(rbind, norms)
+
+library(forcats)
+norm = norm %>% mutate(variable = fct_reorder(variable, var)) 
+```
+
+```{r}
+library(grid)
+library(ggridges)
+library(ggplot2)
+ggplot(norm, aes(distrib, factor(variable), fill = factor(stat(quantile)), 
+                 linetype = factor(name))) + 
+ 
+ labs(title = "Coefficient Plot", 
+      subtitle = expression(italic("Country-level Legacy Effects"))) + 
+ 
+ geom_vline(xintercept = 0, color = "grey30", alpha = 0.5) +
+
+ stat_density_ridges(
+  rel_min_height = 0.01,
+  alpha = 0.7,
+  geom = "density_ridges_gradient", 
+  calc_ecdf = FALSE, quantiles = c(0.05, 0.95),
+  quantile_lines = TRUE, 
+  size = 0.25) +
+ 
+ theme_minimal() + 
+ 
+ scale_fill_manual(values = c("grey80", "grey55", "grey80")) + 
+ scale_x_continuous(breaks = seq(-1.5, 2.5, 0.5)) +  
+ 
+ facet_grid(name ~ ., scales = "free", space = "free") + 
+ 
+ theme(legend.position = "bottom", 
+       legend.title = element_blank(),
+       legend.key.size = unit(1.5, "cm"),
+       legend.key.width = unit(0.01,"cm") ,
+       legend.text = element_text(lineheight = 1.5, hjust = 0, vjust = 0),
+       axis.title = element_blank(), 
+       strip.text.y = element_text(face = "bold", size =  9),
+       panel.grid.minor = element_blank(), 
+       panel.spacing = unit(2, "lines"))  + 
+ guides(fill = FALSE, alpha = TRUE) + 
+ scale_linetype_manual(values = rep(1,4), 
+                  labels = 
+                   c("Model 1a: Right-Wing \nObservations=18,058\nCountries=6\nICC=13.55%", 
+                     "Model 1b: Left-Wing \nObservations=61,135\nCountries=20\nICC=8.45%",
+                     "Model 1c: Democratic \nObservations=33,608\nCountries=12\nICC=7.56%",
+                     "Model 1d: All \nObservations=112,801\nCountries=38\nICC=18.71%")) 
+
+ggsave(paste(fig_dir, "coefplot_h1.png"), width = 8, height = 7)
+```
+
+```{r}
+writexl::write_xlsx(results, paste0(tab_dir, "h1_results.xlsx"))
+```
+
+
+
+
 
