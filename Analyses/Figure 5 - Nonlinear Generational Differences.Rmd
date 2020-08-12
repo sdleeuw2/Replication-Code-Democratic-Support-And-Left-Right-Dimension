@@ -1,0 +1,162 @@
+---
+title: "Table 3 - Individual Level Legacy Effects"
+---
+
+Import Libraries:
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+library(lme4)
+library(lmerTest)
+library(boot)
+library(lm.beta)
+library(memisc)
+library(plyr)
+```
+
+Import Data:
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+source("source_file.R")
+df = subset(df, country != "Hungary" & country != "East Germany")
+df$country = factor(df$country)
+```
+
+Rescale left-right:
+```{r}
+rescale = function(x) {
+ x = x - min(x, na.rm = TRUE)
+ x = x/ max(x, na.rm = TRUE)}
+
+df$age = rescale(df$age)
+df$lrscale = rescale(df$lrscale)
+df$educ = rescale(as.numeric(plyr::revalue(factor(df$educ), c(
+        "Uncompleted Primary" = "1",
+        "Completed Primary" = "2", 
+        "Uncompleted Secondary Vocational" = "3",
+        "Completed Secondary Vocational" = "4",
+        "Uncompleted Secondary Academic" = "5",
+        "Completed Secondary Academic" = "6",
+        "University without Official Degree" = "7", 
+        "University with Official Degree" = "8"
+        ))))
+df$polint = rescale(df$polint)
+```
+
+```{r}
+h2_models = list()
+h2_boots = list()
+
+# Left-Wing
+h2_models[[1]] = lmer(autdem ~ lrscale + exp + lrscale*exp + age + educ + polint + sex + survey +  (1 | country), 
+                        data=subset(df, legacy == unique(df$legacy)[1]))
+h2_boots[[1]] = confint(h2_models[[1]], parm = c(3:14), method = "boot", nsim = 10000, seed = 1993, level = 0.9) 
+
+h2_models[[2]] = lmer(autdem ~ lrscale + exp + lrscale*exp + age + survey +  (1 | country), 
+                        data=subset(df, legacy == unique(df$legacy)[1]))
+h2_boots[[2]] = confint(h2_models[[2]], parm = c(3:11), method = "boot", nsim = 10000, seed = 1993, level = 0.9) 
+
+# Right-Wing
+h2_models[[3]] = lmer(autdem ~ lrscale + exp + lrscale*exp + age + educ + polint + sex + survey +  (1 | country), 
+                        data=subset(df, legacy == unique(df$legacy)[2]))
+h2_boots[[3]] = confint(h2_models[[3]], parm = c(3:14), method = "boot", nsim = 10000, seed = 1993, level = 0.9) 
+
+h2_models[[4]] = lmer(autdem ~ lrscale + exp + lrscale*exp + age + survey +  (1 | country), 
+                        data=subset(df, legacy == unique(df$legacy)[2]))
+h2_boots[[4]] = confint(h2_models[[4]], parm = c(3:11), method = "boot", nsim = 10000, seed = 1993, level = 0.9) 
+```
+
+```{r}
+results = data.frame(rbind(
+  cbind(
+    variable = rownames(data.frame(h2_boots[[3]])),
+    boot_lower = data.frame(h2_boots[[3]])[,1], 
+    boot_upper = data.frame(h2_boots[[3]])[,2], 
+    name = "Model 2a: Right-Wing\nObs = 18,058; Countries = 6", 
+    type = "Conditional"),
+  cbind(
+    variable = rownames(data.frame(h2_boots[[4]])),
+    boot_lower = data.frame(h2_boots[[4]])[,1], 
+    boot_upper = data.frame(h2_boots[[4]])[,2], 
+    name = "Model 2a: Right-Wing\nObs = 18,058; Countries = 6", 
+    type = "Unconditional"),
+  cbind(
+    variable = rownames(data.frame(h2_boots[[1]])),
+    boot_lower = data.frame(h2_boots[[1]])[,1], 
+    boot_upper = data.frame(h2_boots[[1]])[,2],
+    name = "Model 2b: Left-Wing\nObs = 61,135; Countries = 20", 
+    type = "Conditional"), 
+  cbind(
+    variable = rownames(data.frame(h2_boots[[2]])),
+    boot_lower = data.frame(h2_boots[[2]])[,1], 
+    boot_upper = data.frame(h2_boots[[2]])[,2],
+    name = "Model 2b: Left-Wing\nObs = 61,135; Countries = 20",
+    type = "Unconditional") 
+))
+
+results$variable = revalue(factor(results$variable), c(
+  "(Intercept)" = "Intercept", "age" = "Age", "educ" = "Education", "lrscale" = "Left-Right", 
+  "polint" = "Political Interest", "sexMale" = "Sex:Male", "surveyevs2008" = "EVS 2008", "surveywvs1994" = "WVS 1994", 
+  "surveywvs1999" = "WVS 1999", "surveywvs2005" = "WVS 2005", "exp1" = "Experience", 
+  "lrscale:exp1" = "Left-Right*Experience"
+  ))
+
+results$var = as.numeric(as.character(revalue(factor(results$variable),
+                           c("Intercept" = "1", 
+                             "Age" = "2", 
+                             "Education" = "3", 
+                             "Political Interest" = "4", 
+                             "Sex:Male" = "5", 
+                             "EVS 2008" = "6", 
+                             "WVS 1994" = "7", 
+                             "WVS 1999" = "8", 
+                             "WVS 2005" = "9",
+                             "Left-Right*Experience" = "10", 
+                             "Experience" = "11", 
+                             "Left-Right" = "12"
+                            ))))
+
+results$boot_lower = as.numeric(results$boot_lower); results$boot_upper = as.numeric(results$boot_upper)
+
+results$coeff_boot = (results$boot_lower + results$boot_upper) / 2
+results$boot_se = abs(results$boot_upper - results$boot_lower) / 5.15
+```
+
+```{r}
+dist = 0.1
+
+ggplot(data = subset(results, variable != "Intercept"), aes(x = coeff_boot, y = var, color = type)) + 
+  geom_vline(xintercept = 0, color = "grey70", size = 0.25) + 
+  geom_point(data = subset(results, variable != "Intercept" & type == "Conditional" & var > 9), 
+             aes(x = coeff_boot, y = var + dist, color = type),
+             size = 0.5) + 
+  geom_segment(data = subset(results, variable != "Intercept" & type == "Conditional" & var > 9),   
+               aes(x = boot_lower, xend = boot_upper, y = var + dist, yend = var + dist)) + 
+  geom_point(data = subset(results, variable != "Intercept" & type == "Conditional" & var < 10), 
+             aes(x = coeff_boot, y = var, color = type),
+             size = 0.5) + 
+  geom_segment(data = subset(results, variable != "Intercept" & type == "Conditional" & var < 10),   
+               aes(x = boot_lower, xend = boot_upper, y = var, yend = var)) + 
+  geom_point(data = subset(results, variable != "Intercept" & type == "Unconditional"), 
+             aes(x = coeff_boot, y = var - dist, color = type),
+             size = 0.5) + 
+  geom_segment(data = subset(results, variable != "Intercept" & type == "Unconditional"),   
+               aes(x = boot_lower, xend = boot_upper, y = var - dist, yend = var - dist)) + 
+  scale_y_continuous(breaks = c(2:12), 
+                     labels = c("Age", "Education", "Political Interest", "Sex:Male",
+                                "EVS 2008", "WVS 1994", "WVS 1999", "WVS 2005",
+                                "Left-Right*Experience", "Experience", "Left-Right")) + 
+  scale_color_grey() + 
+  theme_minimal() + 
+  theme(axis.title = element_blank(), 
+        legend.position = "bottom", legend.title = element_blank(),
+        panel.grid.minor.y = element_blank(), 
+        strip.text = element_text(size = 10, lineheight = 1.5, vjust = 1) 
+        ) +
+  facet_wrap(. ~ name, nrow = 1)
+
+ggsave(paste(fig_dir, "coefplot_h2_2.png"), width = 8, height = 7)
+```
+
+
+```{r}
+writexl::write_xlsx(results, paste0(tab_dir, "results_h2.xlsx"))
+```
+

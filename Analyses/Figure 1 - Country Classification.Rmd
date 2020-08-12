@@ -2,24 +2,17 @@
 title: "Figure 1 - Country Classification"
 ---
 
-Load libraries 
-```{r message=FALSE, warning=FALSE, paged.print=FALSE}
-library(mapproj)
-library(rworldmap)
-library(plyr)
-```
-
 Import data and directories
 ```{r message=FALSE, warning=FALSE, paged.print=FALSE}
 source("source_file.R")
 ```
 
-Acquires the worldmap and creates a vector containing the countries you want in your map
 ```{r}
+library(rworldmap)
 worldMap = getMap()
-countries = unique(subset(data.frame(continent = as.character(worldMap$Stern), 
-             country = as.character(worldMap$REGION)), continent == "Europe"))$country
-countries = which(worldMap$REGION%in%countries)
+countries = unique(data.frame(continent = as.character(worldMap$Stern), 
+             country = as.character(worldMap$SOVEREIGNT)))$country
+countries = which(worldMap$SOVEREIGNT%in%countries)
 
 coordinates = lapply(countries, function(i){
   df = data.frame(worldMap@polygons[[i]]@Polygons[[1]]@coords)
@@ -33,8 +26,8 @@ coordinates = do.call("rbind", coordinates)
 
 Shapefile Germany
 ```{r}
-library(sp)
-germany = readRDS("/Users/sjifradeleeuw/Downloads/gadm36_DEU_1_sp.rds")
+library(sf)
+germany = readRDS(url("https://biogeo.ucdavis.edu/data/gadm3.6/Rsf/gadm36_DEU_1_sf.rds"))
 ```
 
 Obtain the values necessary for the map from your own data and merge with coordinates
@@ -63,26 +56,22 @@ coordinates = subset(coordinates, !is.na(legacy))
 ```
 
 ```{r}
-names = merge(aggregate(long ~ country, data = coordinates, FUN = mean),
-              aggregate(lat ~ country, data = coordinates, FUN = mean),
-              by = "country")
-names
-```
-
-Plot
-```{r}
 library(ggplot2)
 p = ggplot() + 
-  geom_polygon(data = subset(coordinates, country != "Germany" & country != "Iceland"), 
-    aes(x = long, y = lat, group = country, fill = legacy), colour = "black", size = 0.1) + 
   geom_polygon(data = subset(coordinates, country == "Germany"), 
-    aes(x = long, y = lat, group = country), colour = "black", fill = "grey10", size = 0.1, alpha = 1) + 
+    aes(x = long, y = lat, group = country, fill = legacy), size = 0.1, color = "black") + 
   geom_polygon(data=
-    subset(germany, NAME_1 %in% 
-            c("Brandenburg", "Thüringen", "Sachsen", "Sachsen-Anhalt", "Mecklenburg-Vorpommern")), 
-               aes(x = long, y = lat, group=group), color="black",fill="white", size = 0.1) + 
-  scale_fill_manual(values = c("grey90", "grey45", "grey10")) +
+    data.frame(st_coordinates(subset(germany, NAME_1 %in% 
+            c("Brandenburg", "Thüringen", "Sachsen", "Sachsen-Anhalt", "Mecklenburg-Vorpommern")))), 
+               aes(x = X, y = Y), fill="white", size = 0.1) + 
+  geom_polygon(data = subset(coordinates, country != "Germany"), 
+    aes(x = long, y = lat, group = country, fill = legacy), size = 0.1, color = "black") + 
+  geom_polygon(data = subset(coordinates, country == "Germany"), 
+    aes(x = long, y = lat, group = country), size = 0.1, color = "black", alpha = 0) + 
+  geom_polygon(data = subset(coordinates, country == "Germany" & long > 10 & lat > 50), 
+    aes(x = long, y = lat), fill = "white", size = 0.1, color = NA) + 
   coord_map(xlim = c(-10, 50),  ylim = c(35, 70)) + 
+  scale_fill_manual(values = c("grey90", "grey45", "grey10")) +
   theme_void() + 
   theme(
     axis.text = element_blank(), axis.ticks = element_blank(), 
@@ -92,7 +81,7 @@ p = ggplot() +
     panel.grid.major = element_blank(), 
     panel.grid.minor = element_blank() 
    )
+p
 
 ggsave(p, filename = paste0(fig_dir, 'Figure 1 - Classification.png'))
-p
 ```

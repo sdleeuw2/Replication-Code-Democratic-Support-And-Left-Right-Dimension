@@ -7,6 +7,17 @@ Directories:
 source("source_file.R")
 ```
 
+```{r}
+germany = subset(df, country == "West Germany" | country == "East Germany")
+germany$country = factor(germany$country)
+gam_germany = mgcv::gam(autdem ~ s(lrscale, k = 10, by = country), data = germany)
+
+library(ggplot2)
+ggplot(subset(df, country == "Hungary" | country == "East Germany" | country == "West Germany"), aes(x = lrscale, y = autdem, color = country)) + 
+  geom_smooth()
+```
+
+
 Import data:
 ```{r}
 agg = read.csv(paste0(data_dir, "authors-country_data.csv"))

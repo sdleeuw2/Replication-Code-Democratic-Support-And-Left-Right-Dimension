@@ -7,7 +7,7 @@ Directories and data:
 source("source_file.R")
 ```
 
-**Democratic Learning Test 1** 
+C.2.1. Democratic Learning
 ```{r}
 datasets = list(subset(df, legacy == "Right-Wing" & exp == 1), 
                 subset(df, legacy == "Left-Wing" & exp == 1))
@@ -38,5 +38,166 @@ ggplot2::ggplot(data = subset(demlearn_list, param!="Intercept"), aes(x = param,
 ggsave(paste0(out_dir, "individuallegacy-democraticlearning.png"), width = 6, height = 3)
 ```
 
-**Democratic Learning Test 2**
+C.2.2. Duration of Exposure
+```{r}
+lapply(c("mgcv", "gamm4", "rstanarm", "ggpubr", "ggplot2", "plyr", "dplyr", "mgcViz"), require, character.only = TRUE)
+h2b_gams = list()
+h2b_gams_pred = list()
+
+for (i in c(1:2)) {
+ legacydata = subset(df, legacy == unique(df$legacy)[i])
+ legacydata$exp_dec = round_any(legacydata$exposure, 10, f = ceiling)
+ legacydata$exp_dec[legacydata$exposure == 0] = 0
+ legacydata$exp_dec = factor(legacydata$exp_dec)
+ h2b_gams[[i]] = gam(autdem ~ s(lrscale, k = 10, by = exp_dec), data = legacydata)
+ h2b_gams_pred[[i]] = tidymv::predict_gam(h2b_gams[[i]])
+ h2b_gams_pred[[i]]$legacy = unique(df$legacy)[i]
+ capture.output(summary(h2b_gams[[i]]), 
+                file = paste0(tab_dir, "h2b_", unique(df$legacy)[i], ".txt"))
+}
+
+h2b_gams_pred = do.call(rbind, h2b_gams_pred)
+h2b_gams_pred$hypothesis = "H2b Duration"
+colnames(h2b_gams_pred) = c("lrscale", "value", "fit", "se.fit", "legacy", "hypothesis")
+```
+
+Effective Degrees of Freedom Statistics:
+```{r}
+edfs_1 = data.frame(
+ value = c("0", "30", "60", "0", "30", "50"),
+ legacy = c("Left-Wing", "Left-Wing", "Left-Wing", "Right-Wing", "Right-Wing","Right-Wing"),
+ edf = c(1, 6.063, 6.471,7.995, 6.732, 1.000)
+)
+```
+
+```{r}
+library(gridExtra)
+h2_pred = rbind(subset(rbind(h2a_gams_pred, h2b_gams_pred, h2c_gams_pred), legacy == "Left-Wing" & 
+                 value != "Adult Exposure" & value != "Full Exposure" & 
+                 value != "20" & value != "40" & value != "10" & value != "50" & value != "70"),
+                subset(rbind(h2a_gams_pred, h2b_gams_pred, h2c_gams_pred), legacy == "Right-Wing" & 
+                 value != "Adult Exposure" & value != "Full Exposure" & 
+                 value != "10" & value != "20" & value != "40" & value != "60" & value != "70"))
+
+h2b_gams_pred$lrscale_round = round(h2b_gams_pred$lrscale)
+h2b_gams_pred$value = as.character(h2b_gams_pred$value)
+h2b_gams_pred = merge(h2b_gams_pred, edfs_1, by = c("value", "legacy"))
+
+h2b_gams_pred$classes = paste0(h2b_gams_pred$hypothesis, ": ", h2b_gams_pred$legacy)
+h2b_gams_pred$value = paste0(h2b_gams_pred$value, " (edf=", h2b_gams_pred$edf, ")")
+
+xs_1 = split(h2b_gams_pred,f = h2b_gams_pred$classes)
+
+for (i in c(1:2)) {
+ data = xs_1[[i]]
+ data = data[order(data$lrscale),]
+ xs_1[[i]] = data
+}
+```
+
+```{r}
+library(gridExtra)
+library(tidymv)
+
+p1 = ggplot(xs_1$`H2b Duration: Left-Wing`, aes(lrscale, fit, linetype = value)) + 
+ geom_smooth_ci() + ylim(0,2.5) + 
+ xlab("Left-Right Orientation") + ylab("Democratic Support") + 
+ scale_x_continuous(breaks = c(1:10)) + 
+ theme_minimal() + 
+ facet_grid(.~classes) + 
+ theme(legend.position = "bottom",
+       panel.grid.minor = element_blank(),
+       legend.title = element_blank(),
+       legend.text = element_text(size = 8), 
+       axis.title = element_blank(),
+       strip.text = element_text(face = "bold", vjust = 3, size = 11))
+
+p2 = p1 %+% xs_1$`H2b Duration: Right-Wing`
+
+grid.arrange(p1,p2, ncol = 2)
+
+dev.copy(png,paste0(fig_dir, 'annex_durexp.png'), width = 7000, height = 3500, res=600)
+dev.off()
+```
+
+
+C.2.3. Age of Exposure
+```{r}
+# exposure age: 1 = No Exposure, 2 = Adult Exposure, 3 = Full Exposure, 4 = Early Exposure 
+
+df$exp_age = factor(df$exposure_age, levels = c(1:4), 
+                    labels = c("No Exposure", 
+                               "Adult Exposure", 
+                               "Full Exposure",
+                               "Early Exposure"))
+
+h2c_gams = list()
+h2c_gams_pred = list()
+
+for (i in c(1:2)) {
+ legacydata = subset(df, legacy == unique(df$legacy)[i])
+ h2c_gams[[i]] = gam(autdem ~ s(lrscale, k = 10, by = exp_age), data = legacydata)
+ h2c_gams_pred[[i]] = tidymv::predict_gam(h2c_gams[[i]])
+ h2c_gams_pred[[i]]$legacy = unique(df$legacy)[i]
+ capture.output(summary(h2c_gams[[i]]), 
+                file = paste0(tab_dir, "h2c_", unique(df$legacy)[i], ".txt"))
+}
+
+h2c_gams_pred = do.call(rbind, h2c_gams_pred)
+h2c_gams_pred$hypothesis = "H2c Exposure Age"
+colnames(h2c_gams_pred) = c("lrscale", "value", "fit", "se.fit", "legacy", "hypothesis")
+```
+
+Effective Degrees of Freedom Statistics:
+```{r}
+edfs_2 = data.frame(
+ value = c("No Exposure", "Early Exposure", "No Exposure", "Early Exposure"),
+ legacy = c("Left-Wing", "Left-Wing", "Right-Wing", "Right-Wing"),
+ edf = c(1.000, 7.222, 7.993, 5.399)
+)
+```
+
+```{r}
+library(gridExtra)
+h2c_gams_pred$lrscale_round = round(h2c_gams_pred$lrscale)
+h2c_gams_pred$value = as.character(h2c_gams_pred$value)
+h2c_gams_pred = merge(h2c_gams_pred, edfs_2, by = c("value", "legacy"))
+
+h2c_gams_pred$classes = paste0(h2c_gams_pred$hypothesis, ": ", h2c_gams_pred$legacy)
+h2c_gams_pred$value = paste0(h2c_gams_pred$value, " (edf=", h2c_gams_pred$edf, ")")
+
+xs_2 = split(h2c_gams_pred,f = h2c_gams_pred$classes)
+
+for (i in c(1:2)) {
+ data = xs_2[[i]]
+ data = data[order(data$lrscale),]
+ xs_2[[i]] = data
+}
+```
+
+```{r}
+library(gridExtra)
+library(tidymv)
+
+p1 = ggplot(xs_2$`H2c Exposure Age: Left-Wing`, aes(lrscale, fit, linetype = value)) + 
+ geom_smooth_ci() + ylim(0.5,2.0) + 
+ xlab("Left-Right Orientation") + ylab("Democratic Support") + 
+ scale_x_continuous(breaks = c(1:10)) + 
+ theme_minimal() + 
+ facet_grid(.~classes) + 
+ theme(legend.position = "bottom",
+       panel.grid.minor = element_blank(),
+       legend.title = element_blank(),
+       legend.text = element_text(size = 8), 
+       axis.title = element_blank(),
+       strip.text = element_text(face = "bold", vjust = 3, size = 11))
+
+p2 = p1 %+% xs_2$`H2c Exposure Age: Right-Wing`
+
+grid.arrange(p1,p2, ncol = 2)
+
+dev.copy(png,paste0(fig_dir, 'annex_agexp.png'), width = 7000, height = 3500, res=600)
+dev.off()
+```
+
 
