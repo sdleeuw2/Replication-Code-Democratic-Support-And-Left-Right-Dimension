@@ -1,462 +1,29 @@
 ---
-title: "Figure 3: Individual Legacy Effects"
+title: "Table 3 - Individual Level Legacy Effects"
 ---
 
-Libraries:
-```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
-lapply(c("mgcv", "gamm4", "rstanarm", "ggpubr", "ggplot2", "plyr", "dplyr", "mgcViz", "ggrepel"), require, character.only = TRUE)
+Import Libraries:
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+library(lme4)
+library(lmerTest)
+library(boot)
+library(lm.beta)
+library(memisc)
+library(plyr)
 ```
 
-Import data:
+Import Data:
 ```{r message=FALSE, warning=FALSE, paged.print=FALSE}
 source("source_file.R")
 df = subset(df, country != "Hungary" & country != "East Germany")
+df$country = factor(df$country)
 ```
 
-Function to produce plot dataframe containing Generalized Additive Mixed Model predictions:
+Rescale left-right:
 ```{r}
-datagamm = function (gammFit, smooth.cov, groupCovs = NULL, orderedAsFactor = F, 
-    rawOrFitted = F, plotCI = T, grouping = NULL) 
-{
-    if (missing(gammFit)) {
-        stop("gammFit is missing")
-    }
-    if (missing(smooth.cov)) {
-        stop("smooth.cov is missing")
-    }
-    if (class(smooth.cov) != "character") {
-        stop("smooth.cov must be a character")
-    }
-    if (class(groupCovs) != "character" & (!is.null(groupCovs))) {
-        stop("groupCovs must be a character")
-    }
-    if (!(rawOrFitted == F | rawOrFitted == "raw" | rawOrFitted == 
-        "fitted")) {
-        stop("Wrong input for rawOrFitted")
-    }
-    fit <- fitted <- group <- se.fit <- NULL
-    if (!(base::class(gammFit$gam) == "gam" & base::class(gammFit$mer) == 
-        "lmerMod")) {
-        stop("gamFit is not a object created by gamm4()")
-    }
-    if (base::is.character(rawOrFitted)) {
-        if (((rawOrFitted == "raw") & base::is.null(grouping))) {
-            base::warning("grouping variable is missing will plot raw values as points rather than trajectories")
-        }
-        else if (((rawOrFitted == "fitted") & base::is.null(grouping))) {
-            base::warning("grouping variable is missing will plot fitted values as points rather than trajectories")
-        }
-    }
-    if (base::is.null(rawOrFitted) & !(is.null(grouping))) {
-        warning("Ignoring grouping variable and defaulting to no raw or fitted values in plot")
-    }
-    if (base::is.null(groupCovs)) {
-        gam <- gammFit$gam
-        temp.data <- gam$model
-        if (is.character(grouping)) {
-            if (!any(names(temp.data) == grouping)) {
-                stop("grouping variable is not in model fit, please update model arguments")
-            }
-        }
-        if (is.character(grouping)) {
-            temp.data[grouping] <- as.factor(temp.data[grouping][, 
-                1])
-        }
-        old.formula <- gam$formula
-        old.covariates <- base::as.character(old.formula)[3]
-        old.covariates <- base::gsub(" ", "", old.covariates)
-        main.smooth <- base::paste0("s(", smooth.cov)
-        interaction.smooth <- base::paste0("s(", smooth.cov, 
-            ",by=")
-        if (!base::grepl(pattern = main.smooth, old.covariates, 
-            fixed = T)) {
-            base::stop("smooth.cov is not included in formula for original model fit")
-        }
-        if (base::grepl(pattern = interaction.smooth, old.covariates, 
-            fixed = T)) {
-            base::stop("smooth.cov has an interaction term in original model fit, pass groupCovs as an argument")
-        }
-        plot.df = base::data.frame(x = base::seq(min(temp.data[smooth.cov]), 
-            max(temp.data[smooth.cov]), length.out = 200))
-        base::names(plot.df) <- smooth.cov
-        for (i in names(gam$var.summary)) {
-            if (i != smooth.cov) {
-                if (base::any(base::class(temp.data[i][, 1])[1] == 
-                  c("numeric", "integer", "boolean"))) {
-                  plot.df[, base::dim(plot.df)[2] + 1] <- base::mean(temp.data[i][, 
-                    1])
-                  base::names(plot.df)[base::dim(plot.df)[2]] <- i
-                }
-                else if (base::any(base::class(temp.data[i][, 
-                  1])[1] == c("character", "factor", "ordered"))) {
-                  plot.df[, base::dim(plot.df)[2] + 1] <- temp.data[i][1, 
-                    1]
-                  base::names(plot.df)[base::dim(plot.df)[2]] <- i
-                }
-                else {
-                  stop(base::paste("Unrecognized data type for", 
-                    i, "please refit cluster model with different datatype"))
-                }
-            }
-        }
-        for (i in 1:dim(plot.df)[2]) {
-            if (class(plot.df[, i])[1] == "ordered" | class(plot.df[, 
-                i])[1] == "factor") {
-                warning("There are one or more factors in the model fit, please consider plotting by group since plot might be unprecise")
-            }
-        }
-        plot.df = base::cbind(plot.df, base::as.data.frame(mgcv::predict.gam(gam, 
-            plot.df, se.fit = TRUE)))
-        if (plotCI) {
-            plot <- (ggplot2::ggplot(data = plot.df, ggplot2::aes(x = plot.df[, 
-                1])) + ggplot2::geom_line(ggplot2::aes(y = fit), 
-                size = 1) + ggplot2::geom_ribbon(data = plot.df, 
-                ggplot2::aes(ymax = fit + 1.96 * se.fit, ymin = fit - 
-                  1.96 * se.fit, linetype = NA), alpha = 0.2) + 
-                ggplot2::ggtitle(base::paste0(base::as.character(old.formula)[2], 
-                  "  vs. s(", smooth.cov, ")")) + ggplot2::ylab(base::paste0("Predicted ", 
-                base::as.character(old.formula)[2])) + ggplot2::xlab(base::paste0("s(", 
-                smooth.cov, ")")) + ggplot2::theme_bw())
-        }
-        else {
-            plot <- (ggplot2::ggplot(data = plot.df, ggplot2::aes(x = plot.df[, 
-                1])) + ggplot2::geom_line(ggplot2::aes(y = fit), 
-                size = 1) + ggplot2::ggtitle(base::paste0(base::as.character(old.formula)[2], 
-                "  vs. s(", smooth.cov, ")")) + ggplot2::ylab(base::paste0("Predicted ", 
-                base::as.character(old.formula)[2])) + ggplot2::xlab(base::paste0("s(", 
-                smooth.cov, ")")) + ggplot2::theme_bw())
-        }
-        if (base::is.character(rawOrFitted)) {
-            if (rawOrFitted == "raw" & base::is.null(grouping)) {
-                plot <- plot + ggplot2::geom_point(data = temp.data, 
-                  ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                    y = temp.data[, 1]))
-                base::return(plot.df)
-            }
-            else if (rawOrFitted == "fitted" & base::is.null(grouping)) {
-                temp.data$fitted <- gam$fitted.values
-                plot <- plot + ggplot2::geom_point(data = temp.data, 
-                  ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                    y = fitted))
-                base::return(plot.df)
-            }
-            else if (rawOrFitted == "raw" & base::is.character(grouping)) {
-                plot <- plot + ggplot2::geom_line(data = temp.data, 
-                  ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                    y = temp.data[, 1], group = factor(temp.data[grouping][, 
-                      1])), alpha = 0.2)
-                base::return(plot.df)
-            }
-            else if (rawOrFitted == "fitted" & base::is.character(grouping)) {
-                temp.data$fitted <- gam$fitted.values
-                plot <- plot + ggplot2::geom_line(data = temp.data, 
-                  ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                    y = fitted, group = factor(temp.data[grouping][, 
-                      1])), alpha = 0.2)
-                base::return(plot.df)
-            }
-        }
-        else {
-            base::return(plot.df)
-        }
-    }
-    else if (base::is.character(groupCovs)) {
-        gam <- gammFit$gam
-        temp.data <- gam$model
-        if (is.character(grouping)) {
-            if (!any(names(temp.data) == grouping)) {
-                stop("grouping variable is not in model fit, please update model arguments")
-            }
-        }
-        if (is.character(grouping)) {
-            temp.data[grouping] <- as.factor(temp.data[grouping][, 
-                1])
-        }
-        old.formula <- gam$formula
-        old.covariates <- base::as.character(old.formula)[3]
-        old.covariates <- base::gsub(" ", "", old.covariates)
-        main.smooth <- base::paste0("s(", smooth.cov)
-        interaction.smooth <- base::paste0("s(", smooth.cov, 
-            ",by=")
-        if (regexpr(groupCovs, as.character(old.covariates))[1] == 
-            1) {
-            old.covariates <- paste0("+", old.covariates)
-        }
-        main.group <- base::paste0("+", groupCovs)
-        if (!base::grepl(pattern = main.group, old.covariates, 
-            fixed = T)) {
-            base::stop("Error groupCovs is not included as a main effect in original model, include in original fit")
-        }
-        temp.fm <- strsplit(old.covariates, split = "+", fixed = T)[[1]]
-        for (i in 1:length(temp.fm)) {
-            if (grepl(main.smooth, temp.fm[i], fixed = T)) {
-                temp.term <- strsplit(temp.fm[i], split = ",", 
-                  fixed = T)[[1]]
-                if (length(temp.term) > 1) {
-                  for (j in 2:length(temp.term)) {
-                    if (grepl("=", temp.term[j])) {
-                      if (grepl("by", temp.term[j])) {
-                        order <- 1:length(temp.term)
-                        order <- setdiff(order, j)
-                        if (all(order == 1)) {
-                          order <- c(1, 2)
-                          temp.term <- temp.term[order]
-                        }
-                        else {
-                          order <- c(order, NA)
-                          order <- order[c(1, length(order), 
-                            2:(length(order) - 1))]
-                          order[2] <- j
-                          temp.term <- temp.term[order]
-                          temp.term <- gsub(pattern = ")", replacement = "", 
-                            x = temp.term)
-                          temp.term[length(temp.term)] <- paste0(temp.term[length(temp.term)], 
-                            ")")
-                        }
-                      }
-                    }
-                    else {
-                      base::stop("spline containing smooth.cov has more than one variable, refit with only one")
-                    }
-                  }
-                }
-                temp.fm[i] <- toString(temp.term)
-            }
-        }
-        old.covariates <- paste0(temp.fm, collapse = "+")
-        old.covariates <- base::gsub(" ", "", old.covariates)
-        if (!base::grepl(pattern = main.smooth, old.covariates, 
-            fixed = T) & base::class(temp.data[groupCovs][, 1])[1] == 
-            "ordered") {
-            base::stop("smooth.cov is not included in formula for original model fit, model might be incorrectly parametrized")
-        }
-        else if (!base::grepl(pattern = interaction.smooth, old.covariates, 
-            fixed = T)) {
-            base::warning("smooth.cov has no interaction term in original model fit")
-            foo <- base::seq(min(temp.data[smooth.cov]), max(temp.data[smooth.cov]), 
-                length.out = 200)
-            plot.df = base::data.frame(x = rep(foo, nlevels(as.factor(temp.data[groupCovs][, 
-                1]))))
-            base::names(plot.df) <- smooth.cov
-            plot.df$temp <- rep(levels(as.factor(temp.data[groupCovs][, 
-                1])), each = 200)
-            base::names(plot.df)[2] <- groupCovs
-            for (i in names(gam$var.summary)) {
-                if (!(i == smooth.cov | i == groupCovs)) {
-                  if (base::any(base::class(temp.data[i][, 1])[1] == 
-                    c("numeric", "integer", "boolean"))) {
-                    plot.df[, base::dim(plot.df)[2] + 1] <- base::mean(temp.data[i][, 
-                      1])
-                    base::names(plot.df)[base::dim(plot.df)[2]] <- i
-                  }
-                  else if (base::any(base::class(temp.data[i][, 
-                    1])[1] == c("character", "factor", "ordered"))) {
-                    plot.df[, base::dim(plot.df)[2] + 1] <- temp.data[i][1, 
-                      1]
-                    base::names(plot.df)[base::dim(plot.df)[2]] <- i
-                  }
-                  else {
-                    stop(base::paste("Unrecognized data type for", 
-                      i, "please refit cluster model with different datatype"))
-                  }
-                }
-            }
-            plot.df = base::cbind(plot.df, base::as.data.frame(mgcv::predict.gam(gam, 
-                plot.df, se.fit = TRUE)))
-            plot.df$group <- plot.df[, 2]
-            if (plotCI) {
-                plot <- (ggplot2::ggplot(data = plot.df, ggplot2::aes(x = plot.df[, 
-                  1])) + ggplot2::geom_line(ggplot2::aes(y = fit, 
-                  col = factor(group)), size = 1) + ggplot2::geom_ribbon(data = plot.df, 
-                  ggplot2::aes(ymax = fit + 1.96 * se.fit, ymin = fit - 
-                    1.96 * se.fit, col = factor(group), linetype = NA), 
-                  alpha = 0.2) + ggplot2::ggtitle(base::paste0(base::as.character(old.formula)[2], 
-                  " vs. s(", smooth.cov, ")")) + ggplot2::ylab(base::paste0("Predicted ", 
-                  base::as.character(old.formula)[2])) + ggplot2::xlab(base::paste0("s(", 
-                  smooth.cov, ")")) + ggplot2::scale_colour_discrete(name = groupCovs) + 
-                  ggplot2::theme_bw())
-            }
-            else {
-                plot <- (ggplot2::ggplot(data = plot.df, ggplot2::aes(x = plot.df[, 
-                  1])) + ggplot2::geom_line(ggplot2::aes(y = fit, 
-                  col = factor(group)), size = 1) + ggplot2::ggtitle(base::paste0(base::as.character(old.formula)[2], 
-                  " vs. s(", smooth.cov, ")")) + ggplot2::ylab(base::paste0("Predicted ", 
-                  base::as.character(old.formula)[2])) + ggplot2::xlab(base::paste0("s(", 
-                  smooth.cov, ")")) + ggplot2::scale_colour_discrete(name = groupCovs) + 
-                  ggplot2::theme_bw())
-            }
-            if (base::is.character(rawOrFitted)) {
-                if (rawOrFitted == "raw" & base::is.null(grouping)) {
-                  plot <- plot + ggplot2::geom_point(data = temp.data, 
-                    ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                      y = temp.data[, 1], col = factor(temp.data[groupCovs][, 
-                        1])))
-                  base::return(plot.df)
-                }
-                else if (rawOrFitted == "fitted" & base::is.null(grouping)) {
-                  temp.data$fitted <- gam$fitted.values
-                  plot <- plot + ggplot2::geom_point(data = temp.data, 
-                    ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                      y = fitted, col = factor(temp.data[groupCovs][, 
-                        1])))
-                  base::return(plot.df)
-                }
-                else if (rawOrFitted == "raw" & base::is.character(grouping)) {
-                  plot <- plot + ggplot2::geom_line(data = temp.data, 
-                    ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                      y = temp.data[, 1], group = factor(temp.data[grouping][, 
-                        1]), col = factor(temp.data[groupCovs][, 
-                        1])), alpha = 0.4)
-                  base::return(plot.df)
-                }
-                else if (rawOrFitted == "fitted" & base::is.character(grouping)) {
-                  temp.data$fitted <- gam$fitted.values
-                  plot <- plot + ggplot2::geom_line(data = temp.data, 
-                    ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                      y = fitted, group = factor(temp.data[grouping][, 
-                        1]), col = factor(temp.data[groupCovs][, 
-                        1])), alpha = 0.4)
-                  base::return(plot.df)
-                }
-            }
-            else {
-                base::return(plot.df)
-            }
-        }
-        else {
-            main.group <- base::paste0("+", groupCovs)
-            if (!base::grepl(pattern = main.group, old.covariates, 
-                fixed = T)) {
-                base::stop("groupCovs is not included as main effect in original model, please include in original fit")
-            }
-            orderedAsFactor <- F
-            if (base::class(temp.data[groupCovs][, 1])[1] == 
-                "ordered" & orderedAsFactor) {
-                base::warning("groupCovs is an ordered variable in original fit, reffiting model with groupCovs as a factor")
-                temp.data[groupCovs] <- as.factor(as.character(temp.data[groupCovs][, 
-                  1]))
-                textCall <- gam$call
-                updatedCovs <- base::gsub(main.smooth, replacement = "", 
-                  old.covariates, fixed = T)
-                updatedformula <- stats::as.formula(paste(old.formula[2], 
-                  old.formula[1], updatedCovs))
-                new.data <- temp.data
-                gam <- stats::update(gam, formula = updatedformula, 
-                  data = new.data)
-            }
-            temp.data <- gam$model
-            old.formula <- gam$formula
-            old.covariates <- base::as.character(old.formula)[3]
-            old.covariates <- base::gsub(" ", "", old.covariates)
-            main.smooth <- base::paste0("s(", smooth.cov, ")")
-            interaction.smooth <- base::paste0("s(", smooth.cov, 
-                ",by=")
-            foo <- base::seq(min(temp.data[smooth.cov]), max(temp.data[smooth.cov]), 
-                length.out = 200)
-            plot.df = base::data.frame(x = rep(foo, nlevels(temp.data[groupCovs][, 
-                1])))
-            base::names(plot.df) <- smooth.cov
-            plot.df$temp <- rep(levels(temp.data[groupCovs][, 
-                1]), each = 200)
-            base::names(plot.df)[2] <- groupCovs
-            for (i in names(gam$var.summary)) {
-                if (!(i == smooth.cov | i == groupCovs)) {
-                  if (base::any(base::class(temp.data[i][, 1])[1] == 
-                    c("numeric", "integer", "boolean"))) {
-                    plot.df[, base::dim(plot.df)[2] + 1] <- base::mean(temp.data[i][, 
-                      1])
-                    base::names(plot.df)[base::dim(plot.df)[2]] <- i
-                  }
-                  else if (base::any(base::class(temp.data[i][, 
-                    1])[1] == c("character", "factor", "ordered"))) {
-                    plot.df[, base::dim(plot.df)[2] + 1] <- temp.data[i][1, 
-                      1]
-                    base::names(plot.df)[base::dim(plot.df)[2]] <- i
-                  }
-                  else {
-                    stop(base::paste("Unrecognized data type for", 
-                      i, "please refit cluster model with different datatype"))
-                  }
-                }
-            }
-            plot.df = base::cbind(plot.df, base::as.data.frame(mgcv::predict.gam(gam, 
-                plot.df, se.fit = TRUE)))
-            plot.df$group <- plot.df[, 2]
-            if (plotCI) {
-                plot <- (ggplot2::ggplot(data = plot.df, ggplot2::aes(x = plot.df[, 
-                  1])) + ggplot2::geom_line(ggplot2::aes(y = fit, 
-                  col = factor(group)), size = 1) + ggplot2::geom_ribbon(data = plot.df, 
-                  ggplot2::aes(ymax = fit + 1.96 * se.fit, ymin = fit - 
-                    1.96 * se.fit, col = factor(group), linetype = NA), 
-                  alpha = 0.2) + ggplot2::ggtitle(base::paste0(base::as.character(old.formula)[2], 
-                  "  vs. s(", smooth.cov, ")")) + ggplot2::ylab(base::paste0("Predicted ", 
-                  base::as.character(old.formula)[2])) + ggplot2::xlab(base::paste0("s(", 
-                  smooth.cov, ")")) + ggplot2::scale_colour_discrete(name = groupCovs) + 
-                  ggplot2::theme_bw())
-            }
-            else {
-                plot <- (ggplot2::ggplot(data = plot.df, ggplot2::aes(x = plot.df[, 
-                  1])) + ggplot2::geom_line(ggplot2::aes(y = fit, 
-                  col = factor(group)), size = 1) + ggplot2::ggtitle(base::paste0(base::as.character(old.formula)[2], 
-                  "  vs. s(", smooth.cov, ")")) + ggplot2::ylab(base::paste0("Predicted ", 
-                  base::as.character(old.formula)[2])) + ggplot2::xlab(base::paste0("s(", 
-                  smooth.cov, ")")) + ggplot2::scale_colour_discrete(name = groupCovs) + 
-                  ggplot2::theme_bw())
-            }
-            if (base::is.character(rawOrFitted)) {
-                if (rawOrFitted == "raw" & base::is.null(grouping)) {
-                  plot <- plot + ggplot2::geom_point(data = temp.data, 
-                    ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                      y = temp.data[, 1], col = factor(temp.data[groupCovs][, 
-                        1])))
-                  base::return(plot.df)
-                }
-                else if (rawOrFitted == "fitted" & base::is.null(grouping)) {
-                  temp.data$fitted <- gam$fitted.values
-                  plot <- plot + ggplot2::geom_point(data = temp.data, 
-                    ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                      y = fitted, col = factor(temp.data[groupCovs][, 
-                        1])))
-                  base::return(plot.df)
-                }
-                else if (rawOrFitted == "raw" & base::is.character(grouping)) {
-                  plot <- plot + ggplot2::geom_line(data = temp.data, 
-                    ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                      y = temp.data[, 1], group = factor(temp.data[grouping][, 
-                        1]), col = factor(temp.data[groupCovs][, 
-                        1])), alpha = 0.4)
-                  base::return(plot.df)
-                }
-                else if (rawOrFitted == "fitted" & base::is.character(grouping)) {
-                  temp.data$fitted <- gam$fitted.values
-                  plot <- plot + ggplot2::geom_line(data = temp.data, 
-                    ggplot2::aes(x = purrr::as_vector(temp.data[smooth.cov]), 
-                      y = fitted, group = factor(temp.data[grouping][, 
-                        1]), col = factor(temp.data[groupCovs][, 
-                        1])), alpha = 0.4)
-                  base::return(plot.df)
-                }
-            }
-            else {
-                base::return(plot.df)
-            }
-        }
-    }
-    else {
-        stop("groupCovs is not a character or null please correct")
-    }
-}
-```
-
-Variables
-```{r}
-rescale = function(x) {
- x = x - min(x, na.rm = TRUE)
- x = x/ max(x, na.rm = TRUE)}
-
-df$age = rescale(df$age)
-df$lrscale = rescale(df$lrscale)
-df$educ = rescale(as.numeric(plyr::revalue(factor(df$educ), c(
+df$age = scales::rescale(df$age, c(0:1))
+df$lrscale = scales::rescale(df$lrscale, c(0,1))
+df$educ = scales::rescale(as.numeric(plyr::revalue(factor(df$educ), c(
         "Uncompleted Primary" = "1",
         "Completed Primary" = "2", 
         "Uncompleted Secondary Vocational" = "3",
@@ -465,82 +32,220 @@ df$educ = rescale(as.numeric(plyr::revalue(factor(df$educ), c(
         "Completed Secondary Academic" = "6",
         "University without Official Degree" = "7", 
         "University with Official Degree" = "8"
-        ))))
-df$polint = rescale(df$polint)
-
-df$exp = NA; df$exp[df$exposure==0] = 0; df$exp[df$exposure>0] = 1
-df$exp = factor(df$exp, levels = c(0,1), labels = c("No", "Yes"))
+        ))), c(0,1))
+df$polint = scales::rescale(df$polint, c(0,1))
+df$autdem2 = scales::rescale(df$autdem, c(0,1))
 ```
 
 ```{r}
-m1 = gamm4(autdem ~ s(lrscale, k = 10, by = exp) + exp, 
-           data=subset(df, legacy == unique(df$legacy)[1]),random=~(1|country))
-m1_2 = gamm4(autdem ~ s(lrscale, k = 10, by = exp) + exp + age + educ + polint + sex, 
-             data=subset(df, legacy == unique(df$legacy)[1]),random=~(1|country))
-m2 = gamm4(autdem ~ s(lrscale, k = 10, by = exp) + exp, 
-           data=subset(df, legacy == unique(df$legacy)[2]),random=~(1|country))
-m2_2 = gamm4(autdem ~ s(lrscale, k = 10, by = exp) + exp + age + educ + polint + sex, 
-             data=subset(df, legacy == unique(df$legacy)[2]),random=~(1|country))
+h2_models = list()
+
+h2_models[[1]] = lmer(
+  autdem ~ lrscale + exp + lrscale*exp + age + educ + polint + sex + survey + (1 | country), 
+  data = subset(df, legacy == unique(df$legacy)[1])) # Left-Wing
+h2_models[[2]] = lmer(
+  lrscale ~ autdem2 + exp + autdem2*exp + age + educ + polint + sex + survey + (1 | country), 
+  data = subset(df, legacy == unique(df$legacy)[1])) # Left-Wing
+
+h2_models[[3]] = lmer(
+  autdem ~ lrscale + exp + lrscale*exp + age + educ + polint + sex + survey + (1 | country), 
+  data = subset(df, legacy == unique(df$legacy)[2])) # Right-Wing
+h2_models[[4]] = lmer(
+  lrscale ~ autdem2 + exp + autdem2*exp + age + educ + polint + sex + survey + (1 | country), 
+  data = subset(df, legacy == unique(df$legacy)[2])) # Right-Wing
 ```
 
+Model information:
 ```{r}
-m1 = datagamm(m1, smooth.cov = "lrscale", groupCovs = "exp", grouping = "exp")
-m1 = dplyr::select(m1, -c("exp"))
-
-m1_2 = datagamm(m1_2, smooth.cov = "lrscale", groupCovs = "exp", grouping = "exp")
-m1_2 = dplyr::select(m1_2, -c("exp", "age", "educ", "polint", "sex"))
-
-m2 = datagamm(m2, smooth.cov = "lrscale", groupCovs = "exp", grouping = "exp")
-m2 = dplyr::select(m2, -c("exp"))
-
-m2_2 = datagamm(m2_2, smooth.cov = "lrscale", groupCovs = "exp", grouping = "exp")
-m2_2 = dplyr::select(m2_2, -c("exp", "age", "educ", "polint", "sex"))
-```
-
-```{r}
-gammdata = data.frame(rbind(
-   cbind(m1, type = "Unconditional", legacy = "Left-Wing"),
-   cbind(m1_2, type = "Conditional", legacy = "Left-Wing"),
-   cbind(m2, type = "Unconditional", legacy = "Right-Wing"),
-   cbind(m2_2, type = "Conditional", legacy = "Right-Wing")
-))
-```
-
-Effective Degrees of Freedom
-```{r}
-edfs = data.frame(
- legacy = c("Left-Wing", "Left-Wing", "Right-Wing", "Right-Wing"),
- type = c("Conditional", "Conditional", "Conditional", "Conditional"),
- group = c("Experience:No", "Experience:Yes", "Experience:No", "Experience:Yes"),
- edf = c(2.08, 6.86, 7.11, 5.95),
- lrscale = rep(0.9,4),
- fit = rep(2.5,4)
+varselect = list(
+  c("lrscale", "exp1", "lrscale:exp1"),
+  c("autdem2", "exp1", "autdem2:exp1"), 
+  c("lrscale", "exp1", "lrscale:exp1"),
+  c("autdem2", "exp1", "autdem2:exp1")
 )
 
-gammdata$group[gammdata$group == "Yes"] = "Experience:Yes"
-gammdata$group[gammdata$group == "No"] = "Experience:No"
+legacies = c("Left-Wing", "Left-Wing", "Right-Wing", "Right-Wing")
+dvs = c("Democratic Support", "Left-Right", "Democratic Support", "Left-Right")
+
+modelnames = c("M2b: Left-Wing (N=55,488) \nDV: Democratic Support", 
+               "M2b: Left-Wing (N=55,488)\nDV: Left-Right", 
+               "M2a: Right-Wing (N=17,877)\nDV: Democratic Support", 
+               "M2a: Right-Wing (N=17,877)\nDV: Left-Right")
 ```
 
 ```{r}
-library(ggplot2)
-ggplot(data = gammdata, aes(x = lrscale, y = fit)) + 
-        geom_label_repel(data = edfs, 
-                  aes(lrscale, fit, label = paste0("edf %~~%", "italic('", edf, "')"), group = NA), parse = TRUE,
-                  point.padding = NA) + 
-        geom_line(data = gammdata, aes(y = fit, linetype = type), size = 0.5) + 
-        geom_ribbon(data = gammdata, aes(ymax = fit + 1.96 * se.fit, ymin = fit - 1.96 * se.fit, group = type), alpha = 0.1) + 
-        facet_grid(group~legacy) + 
-        theme_minimal() + 
-        scale_x_continuous(breaks = seq(0, 1, 0.1), labels = c("Left", rep("", 9), "Right")) + 
-        scale_color_grey() + ylab("Democratic Support") + 
-        theme(legend.position = "bottom", legend.title = element_blank(),
-              axis.title.x = element_blank(), 
-              panel.grid.minor.x = element_blank())
+ml_summ = function(model){
+  model = summary(model)
+  out = data.frame(model$coefficients, stringsAsFactors = FALSE)
+  out$variable = rownames(out)
+  colnames(out) = c("coeff", "se", "df", "tvalue", "pvalue", "variable")
+  out$lb = out$coeff - (1.645*out$se); out$ub = out$coeff + (1.645*out$se)
+  return(out)
+}
 
-dev.copy(png,paste0(fig_dir, 'Figure 3- Generational Differences.png'), width = 4000, height = 4000, res=600)
-dev.off()
+results_h2 = list()
+
+for (i in c(1:4)){
+  summ = ml_summ(h2_models[[i]])
+  summ$legacy = legacies[i]
+  summ$dv = dvs[i]
+  summ$model = modelnames[i]
+  results_h2[[i]] = summ
+}
+
+results_h2 = do.call(rbind, results_h2)
+```
+
+Bootstrap: 
+```{r}
+h2_boots = list()
+nsim_n = 5000
+
+for (i in c(1:4)){
+  boot = confint(h2_models[[i]], parm= varselect[[i]], method = "boot", 
+         nsim = nsim_n, seed = 1993, level = 0.9)
+  boot = data.frame(boot)
+  colnames(boot) = c("lb_boot", "ub_boot")
+  boot$variable = rownames(boot)
+  boot$model = modelnames[i]
+  boot$coeff_boot = (boot$lb_boot + boot$ub_boot) / 2
+  h2_boots[[i]] = boot
+  save.image("h2.RData")
+}
+
+h2_boots = do.call(rbind, h2_boots)
+results_h2 = merge(results_h2, h2_boots, by = c("model", "variable"), all = TRUE)
+results_h2$lb_boot[is.na(results_h2$lb_boot)] = results_h2$lb[is.na(results_h2$lb_boot)]
+results_h2$ub_boot[is.na(results_h2$ub_boot)] = results_h2$ub[is.na(results_h2$ub_boot)]
+results_h2$coeff_boot[is.na(results_h2$coeff_boot)] = results_h2$coeff[is.na(results_h2$coeff_boot)]
+
+summary(h2_models[[2]])
+```
+
+Summarize output:
+```{r}
+results_h2 = results_h2[with(results_h2, order(dv, model)),]
+
+results_h2$model = factor(results_h2$model, ordered = TRUE)
+
+library(plyr)
+results_h2$variable = revalue(factor(results_h2$variable), c(
+  "(Intercept)" = "Intercept", "age" = "Age", "educ" = "Education", 
+  "lrscale" = "Independent Var.", "polint" = "Political Interest", 
+  "sexMale" = "Sex:Male", "surveyevs2008" = "EVS 2008", "autdem2" = "Independent Var.",
+  "surveywvs1994" = "WVS 1994", "surveywvs1999" = "WVS 1999", "surveywvs2005" = "WVS 2005", 
+  "exp1" = "Experience", "lrscale:exp1" = "Independent Var.*Experience", 
+  "autdem2:exp1" = "Independent Var.*Experience"
+  ))
+
+results_h2$var = as.numeric(as.character(revalue(factor(results_h2$variable),
+                           c("Intercept" = "1", 
+                             "Age" = "2", 
+                             "Education" = "3", 
+                             "Political Interest" = "4", 
+                             "Sex:Male" = "5", 
+                             "EVS 2008" = "6", 
+                             "WVS 1994" = "7", 
+                             "WVS 1999" = "8", 
+                             "WVS 2005" = "9",
+                             "Independent Var.*Experience" = "10", 
+                             "Experience" = "11", 
+                             "Independent Var." = "12"
+                            ))))
+
+writexl::write_xlsx(results_h2, paste0(tab_dir, "h2_results.xlsx"))
+
+results_h2 = subset(results_h2, variable != "Intercept")
+results_h2 = results_h2[order(results_h2$var),]
+results_h2$variable = as.character(results_h2$variable)
+varnames = unique(results_h2$variable)
+```
+
+```{r}
+ggplot(data = results_h2, aes(x = coeff_boot, y = var)) + 
+  geom_vline(xintercept = 0, color = "grey70", size = 0.25) +
+  geom_segment(aes(x = lb_boot, xend = ub_boot, y = var, yend = var)) + 
+  geom_point() + 
+  scale_color_grey() + 
+  scale_y_continuous(breaks = c(2:(length(varnames)+1)), labels = varnames) + 
+  theme_minimal() + 
+  theme(axis.title = element_blank(), 
+        legend.position = "bottom", legend.title = element_blank(),
+        panel.grid.minor.y = element_blank(), 
+        strip.text = element_text(size = 10, lineheight = 1.5, vjust = 1) 
+        ) +
+  facet_wrap(model ~ ., dir = "v", ncol = 2)
+
+ggsave(paste0(fig_dir, "test2.png"), width = 10, height = 8)
+```
+
+```{r}
+results$variable = revalue(factor(results$variable), c(
+  "(Intercept)" = "Intercept", "age" = "Age", "educ" = "Education", "lrscale" = "Left-Right", 
+  "polint" = "Political Interest", "sexMale" = "Sex:Male", "surveyevs2008" = "EVS 2008", "surveywvs1994" = "WVS 1994", 
+  "surveywvs1999" = "WVS 1999", "surveywvs2005" = "WVS 2005", "exp1" = "Experience", 
+  "lrscale:exp1" = "Left-Right*Experience"
+  ))
+
+results$var = as.numeric(as.character(revalue(factor(results$variable),
+                           c("Intercept" = "1", 
+                             "Age" = "2", 
+                             "Education" = "3", 
+                             "Political Interest" = "4", 
+                             "Sex:Male" = "5", 
+                             "EVS 2008" = "6", 
+                             "WVS 1994" = "7", 
+                             "WVS 1999" = "8", 
+                             "WVS 2005" = "9",
+                             "Left-Right*Experience" = "10", 
+                             "Experience" = "11", 
+                             "Left-Right" = "12"
+                            ))))
+
+results$boot_lower = as.numeric(results$boot_lower); results$boot_upper = as.numeric(results$boot_upper)
+
+results$coeff_boot = (results$boot_lower + results$boot_upper) / 2
+results$boot_se = abs(results$boot_upper - results$boot_lower) / 5.15
+```
+
+```{r}
+dist = 0.1
+
+ggplot(data = subset(results, variable != "Intercept"), aes(x = coeff_boot, y = var, color = type)) + 
+  geom_vline(xintercept = 0, color = "grey70", size = 0.25) + 
+  geom_point(data = subset(results, variable != "Intercept" & type == "Conditional" & var > 9), 
+             aes(x = coeff_boot, y = var + dist, color = type),
+             size = 0.5) + 
+  geom_segment(data = subset(results, variable != "Intercept" & type == "Conditional" & var > 9),   
+               aes(x = boot_lower, xend = boot_upper, y = var + dist, yend = var + dist)) + 
+  geom_point(data = subset(results, variable != "Intercept" & type == "Conditional" & var < 10), 
+             aes(x = coeff_boot, y = var, color = type),
+             size = 0.5) + 
+  geom_segment(data = subset(results, variable != "Intercept" & type == "Conditional" & var < 10),   
+               aes(x = boot_lower, xend = boot_upper, y = var, yend = var)) + 
+  geom_point(data = subset(results, variable != "Intercept" & type == "Unconditional"), 
+             aes(x = coeff_boot, y = var - dist, color = type),
+             size = 0.5) + 
+  geom_segment(data = subset(results, variable != "Intercept" & type == "Unconditional"),   
+               aes(x = boot_lower, xend = boot_upper, y = var - dist, yend = var - dist)) + 
+  scale_y_continuous(breaks = c(2:12), 
+                     labels = c("Age", "Education", "Political Interest", "Sex:Male",
+                                "EVS 2008", "WVS 1994", "WVS 1999", "WVS 2005",
+                                "Left-Right*Experience", "Experience", "Left-Right")) + 
+  scale_color_grey() + 
+  theme_minimal() + 
+  theme(axis.title = element_blank(), 
+        legend.position = "bottom", legend.title = element_blank(),
+        panel.grid.minor.y = element_blank(), 
+        strip.text = element_text(size = 10, lineheight = 1.5, vjust = 1) 
+        ) +
+  facet_wrap(. ~ name, nrow = 1)
+
+ggsave(paste(fig_dir, "coefplot_h2_2.png"), width = 8, height = 7)
 ```
 
 
-
+```{r}
+writexl::write_xlsx(results, paste0(tab_dir, "results_h2.xlsx"))
+```
 

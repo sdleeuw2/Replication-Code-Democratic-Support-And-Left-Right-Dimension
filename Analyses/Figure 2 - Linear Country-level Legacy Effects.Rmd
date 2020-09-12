@@ -1,0 +1,189 @@
+---
+title: "Table 2"
+---
+
+Import Libraries:
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+library(lme4)
+library(lmerTest)
+library(boot)
+library(lm.beta)
+library(memisc)
+library(plyr)
+library(ggplot2)
+```
+
+Import Data:
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+source("source_file.R")
+df = subset(df, country != "Hungary" & country != "East Germany")
+
+df$age = scales::rescale(df$age, c(0,1))
+df$lrscale = scales::rescale(df$lrscale, c(0,1))
+df$educ = scales::rescale(as.numeric(plyr::revalue(factor(df$educ), c(
+        "Uncompleted Primary" = "1",
+        "Completed Primary" = "2", 
+        "Uncompleted Secondary Vocational" = "3",
+        "Completed Secondary Vocational" = "4",
+        "Uncompleted Secondary Academic" = "5",
+        "Completed Secondary Academic" = "6",
+        "University without Official Degree" = "7", 
+        "University with Official Degree" = "8"
+        ))), c(0,1))
+df$polint = scales::rescale(df$polint, c(0,1))
+df$autdem2 = scales::rescale(df$autdem, c(0,1))
+```
+
+Normal analyses
+```{r}
+models = list()
+
+models[[1]] = lmer(autdem ~ lrscale + age + educ + polint + sex + survey + (1 | country), 
+                   data = subset(df, legacy == unique(df$legacy)[1])) # Left-Wing
+models[[2]] = lmer(lrscale ~ autdem2 + age + educ + polint + sex + survey + (1 | country), 
+                   data = subset(df, legacy == unique(df$legacy)[1])) # Left-Wing
+models[[3]] = lmer(autdem ~ lrscale + age + educ + polint + sex + survey + (1 | country), 
+                   data = subset(df, legacy == unique(df$legacy)[2])) # Right-Wing
+models[[4]] = lmer(lrscale ~ autdem2 + age + educ + polint + sex + survey + (1 | country), 
+                   data = subset(df, legacy == unique(df$legacy)[2])) # Right-Wing
+models[[5]] = lmer(autdem ~ lrscale + age + educ + polint + sex + survey + (1 | country), 
+                   data = subset(df, legacy == unique(df$legacy)[3])) # Democratic
+models[[6]] = lmer(lrscale ~ autdem2 + age + educ + polint + sex + survey + (1 | country), 
+                   data = subset(df, legacy == unique(df$legacy)[3])) # Democratic 
+models[[7]] = lmer(autdem ~ lrscale + legacy + legacy*lrscale + age + educ + polint + sex + survey + 
+                   (1 + lrscale | country), data = df) # Pooled
+models[[8]] = lmer(lrscale ~ autdem2 + legacy + legacy*autdem2 + age + educ + polint + sex + survey + 
+                   (1 + autdem2 | country), data = df) # Pooled
+```
+
+Model information:
+```{r}
+varselect = list(
+  c("lrscale"), c("autdem2"), c("lrscale"), c("autdem2"), c("lrscale"), c("autdem2"), 
+  c("lrscale", "legacyLeft-Wing", "legacyRight-Wing", "lrscale:legacyLeft-Wing",
+    "lrscale:legacyRight-Wing"),
+  c("autdem2", "legacyLeft-Wing", "legacyRight-Wing", "autdem2:legacyLeft-Wing",
+    "autdem2:legacyRight-Wing")
+)
+
+legacies = c("Left-Wing", "Left-Wing", "Right-Wing", "Right-Wing", 
+             "Democratic", "Democratic", "Pooled", "Pooled")
+dvs = c("Democratic Support", "Left-Right", "Democratic Support", "Left-Right", 
+        "Democratic Support", "Left-Right", "Democratic Support", "Left-Right")
+
+modelnames = c("M1b: Left-Wing (N=55,488) \nDV: Democratic Support", 
+               "M1b: Left-Wing (N=55,488)\nDV: Left-Right", 
+               "M1a: Right-Wing (N=17,877)\nDV: Democratic Support", 
+               "M1a: Right-Wing (N=17,877)\nDV: Left-Right",
+               "M1c: Democratic (N=32,130)\nDV: Democratic Support", 
+               "M1c: Democratic (N=32,130)\nDV: Left-Right", 
+               "M1d: Pooled (N=105,495)\nDV: Democratic Support", 
+               "M1d: Pooled (N=105,495)\nDV: Left-Right")
+```
+
+```{r}
+ml_summ = function(model){
+  model = summary(model)
+  out = data.frame(model$coefficients, stringsAsFactors = FALSE)
+  out$variable = rownames(out)
+  colnames(out) = c("coeff", "se", "df", "tvalue", "pvalue", "variable")
+  out$lb = out$coeff - (1.645*out$se); out$ub = out$coeff + (1.645*out$se)
+  return(out)
+}
+
+results = list()
+
+for (i in c(1:8)){
+  summ = ml_summ(models[[i]])
+  summ$legacy = legacies[i]
+  summ$dv = dvs[i]
+  summ$model = modelnames[i]
+  results[[i]] = summ
+}
+
+results = do.call(rbind, results)
+```
+
+Bootstrap: 
+```{r}
+boots = list()
+nsim_n = 5000
+
+for (i in c(1:8)){
+  boot = confint(models[[i]], parm= varselect[[i]], method = "boot", 
+         nsim = nsim_n, seed = 1993, level = 0.9)
+  boot = data.frame(boot)
+  colnames(boot) = c("lb_boot", "ub_boot")
+  boot$variable = rownames(boot)
+  boot$model = modelnames[i]
+  boot$coeff_boot = (boot$lb_boot + boot$ub_boot) / 2
+  boots[[i]] = boot
+  save.image("h1.RData")
+}
+
+boots = do.call(rbind, boots)
+results = merge(results, boots, by = c("model", "variable"), all = TRUE)
+results$lb_boot[is.na(results$lb_boot)] = results$lb[is.na(results$lb_boot)]
+results$ub_boot[is.na(results$ub_boot)] = results$ub[is.na(results$ub_boot)]
+results$coeff_boot[is.na(results$coeff_boot)] = results$coeff[is.na(results$coeff_boot)]
+```
+
+Summarize output:
+```{r}
+results = results[with(results, order(dv, model)),]
+
+results$model = factor(results$model, ordered = TRUE)
+
+library(plyr)
+results$variable = revalue(factor(results$variable), c(
+  "(Intercept)" = "Intercept", "age" = "Age", "educ" = "Education", 
+  "legacyLeft-Wing" = "Legacy: Left-Wing", "legacyRight-Wing" = "Legacy: Right-Wing", 
+  "lrscale" = "Independent Var.", "lrscale:legacyLeft-Wing" = "Independent Var.*Left-Wing", 
+  "lrscale:legacyRight-Wing" = "Independent Var.*Right-Wing", "polint" = "Political Interest", 
+  "sexMale" = "Sex:Male", "surveyevs2008" = "EVS 2008", "surveywvs1994" = "WVS 1994", 
+  "surveywvs1999" = "WVS 1999", "surveywvs2005" = "WVS 2005", "autdem2" = "Independent Var.", 
+  "autdem2:legacyLeft-Wing" = "Independent Var.*Left-Wing", 
+  "autdem2:legacyRight-Wing" = "Independent Var.*Right-Wing"
+  ))
+
+results$var = as.numeric(as.character(revalue(factor(results$variable),
+     c("Intercept" = "1", "Age" = "2", "Education" = "3", "Political Interest" = "4", 
+       "Sex:Male" = "5", "EVS 2008" = "6", "WVS 1994" = "7", "WVS 1999" = "8", "WVS 2005" = "9",
+       "Independent Var.*Right-Wing" = "10", "Independent Var.*Right-Wing" = "10", 
+       "Independent Var.*Left-Wing" = "11", "Independent Var.*Left-Wing" = "11", 
+       "Legacy: Left-Wing" = "12", "Legacy: Right-Wing" = "13", "Independent Var." = "14"))))
+
+writexl::write_xlsx(results, paste0(tab_dir, "h1_results.xlsx"))
+
+results = subset(results, variable != "Intercept")
+results = results[order(results$var),]
+results$variable = as.character(results$variable)
+varnames = unique(results$variable)
+```
+
+
+```{r}
+ggplot(data = results, aes(x = coeff_boot, y = var)) + 
+  geom_vline(xintercept = 0, color = "grey70", size = 0.25) +
+  geom_segment(aes(x = lb_boot, xend = ub_boot, y = var, yend = var)) + 
+  geom_point() + 
+  scale_color_grey() + 
+  scale_y_continuous(breaks = c(2:(length(varnames)+1)), labels = varnames) + 
+  theme_minimal() + 
+  theme(axis.title = element_blank(), 
+        legend.position = "bottom", legend.title = element_blank(),
+        panel.grid.minor.y = element_blank(), 
+        strip.text = element_text(size = 10, lineheight = 1.5, vjust = 1) 
+        ) +
+  facet_wrap(model ~ ., dir = "v", ncol = 4)
+
+ggsave(paste0(fig_dir, "test.png"), width = 10, height = 8)
+```
+
+
+
+
+
+
+
+
