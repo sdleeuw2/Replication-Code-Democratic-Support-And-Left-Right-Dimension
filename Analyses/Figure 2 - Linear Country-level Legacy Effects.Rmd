@@ -155,10 +155,9 @@ results$var = as.numeric(as.character(revalue(factor(results$variable),
 ```
 
 ```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+source("source_file.R")
+library(ggplot2)
 results = data.frame(readxl::read_xlsx(paste0(tab_dir, "h1_results.xlsx")))
-
-results$variable = as.character(results$variable)
-varnames = unique(results$variable)
 
 results$model = gsub("\r\n", "\n", results$model)
 results$dv = stringr::str_split_fixed(results$model, "\n", 2)[,2]
@@ -168,6 +167,9 @@ results$model2 = tm::stripWhitespace(results$model2)
 results = subset(results, variable != "Intercept")
 results = results[order(results$var),]
 results$model2[grepl("Left-Wing", results$model2) == TRUE] = "M1b: Left-Wing (N=55,488)"
+
+results$variable = as.character(results$variable)
+varnames = unique(results$variable)
 
 dist = 0.1
 psize = 0.75
@@ -183,7 +185,7 @@ ggplot(data = results, aes(x = coeff_boot, y = var)) +
   geom_point(data = subset(results, dv == "Left-Right"), 
              aes(x = coeff_boot, y = var - dist, color = dv), size = psize) + 
   scale_color_grey() + 
-  scale_y_continuous(breaks = c(2:(length(varnames)+1)), labels = varnames) + 
+  scale_y_continuous(breaks = c(2:(length(varnames) + 1)), labels = varnames) + 
   theme_minimal() + 
   labs(color = "Dependent Variable") + 
   theme(axis.title = element_blank(), 

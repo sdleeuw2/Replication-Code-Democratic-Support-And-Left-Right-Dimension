@@ -4,7 +4,8 @@ title: "Table 1: Summary Statistics"
 
 ```{r}
 source("source_file.R")
-df = subset(df, country!="Hungary" & country != "East Germany")
+df = subset(df, country!="Hungary" & country != "East Germany" & !is.na(lrscale) 
+            & !is.na(autdem) & !is.na(age) & !is.na(educ) & !is.na(polint))
 
 rescale = function(x) {
  x = x - min(x, na.rm = TRUE)
